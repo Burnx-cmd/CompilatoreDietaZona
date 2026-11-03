@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dieta Zona</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<style>
+*{
+box-sizing:border-box;
+}
+body{
+font-family:Arial,sans-serif;
+background:#0f172a;
+color:white;
+padding:20px;
+margin:0;
+}
+.container{
+max-width:900px;
+margin:auto;
+}
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 0 15px rgba(0,0,0,.3);
+}
+h1,h2{
+color:#38bdf8;
+}
+h1{
+text-align:center;
+}
+label{
+display:block;
+margin-top:10px;
+font-weight:bold;
+}
+input,select{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:none;
+border-radius:8px;
+font-size:16px;
+}
+button{
+padding:12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:bold;
+margin-top:10px;
+margin-right:5px;
+}
+button:disabled{
+opacity:.45;
+cursor:not-allowed;
+}
+.calcola{
+background:#22c55e;
+color:white;
+}
+.salva{
+background:#3b82f6;
+color:white;
+}
+.elimina{
+background:#ef4444;
+color:white;
+}
+.backup{
+background:#f59e0b;
+color:white;
+}
+.pasto{
+background:#334155;
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
+}
+.evidenza{
+font-size:24px;
+color:#22c55e;
+font-weight:bold;
+}
+progress{
+width:100%;
+height:25px;
+}
+@media(max-width:600px){
+button{
+width:100%;
+margin-right:0;
+}
+}
+/* Pulsanti "Nuovo Alimento" e "Modifica Alimento" affiancati */
+.azioni-alimento{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:stretch;
+}
+.azioni-alimento button{
+    flex:1 1 150px;
+    width:auto;
+    margin:10px 0 0;
+}
+.accordion-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    background:#334155;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:10px;
+    transition:.25s ease;
+    user-select:none;
+}
+.accordion-header:hover{
+    background:#475569;
+}
+.accordion-header span{
+    transition:.25s ease;
+}
+#contenitorePasti,
+#contenitorePreferiti,
+#contenitoreRapido,
+#contenitoreAlimenti,
+#contenitoreZona{
+    overflow:hidden;
+    transition:all .3s ease;
+    margin-top:15px;
+}
+#iconaPasti,
+#iconaAlimenti,
+#iconaZona{
+    font-size:20px;
+    font-weight:bold;
+}
+#pastoCorrente{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+.cardAlimento{
+    background:#334155;
+    border-radius:10px;
+    padding:10px;
+    min-width:180px;
+    flex:1 1 180px;
+    border-left:4px solid #22c55e;
+}
+.cardAlimento button{
+    width:100%;
+}
+/* Campo obiettivo e bilanciamento affiancati */
+.controllo-obiettivo-pasto{
+    display:flex;
+    align-items:flex-end;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:10px;
+}
+.campo-obiettivo-pasto{
+    flex:0 0 155px;
+}
+.campo-obiettivo-pasto label{
+    margin-top:0;
+}
+.campo-obiettivo-pasto input{
+    width:100%;
+}
+.controllo-obiettivo-pasto .calcola{
+    width:auto;
+    margin:0 0 1px;
+    flex:1 1 190px;
+}
+/* Controlli peso compatti: ogni diminuzione sopra il corrispondente aumento */
+.controlli-peso{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:5px;
+    margin-top:8px;
+}
+.cardAlimento .controlli-peso button{
+    width:100%;
+    min-width:0;
+    margin:0;
+    padding:6px 3px;
+    font-size:12px;
+    line-height:1.2;
+    border-radius:6px;
+    background:#475569;
+    color:#f8fafc;
+}
+.cardAlimento .controlli-peso button:active{
+    transform:scale(.97);
+    background:#64748b;
+}
+.cardAlimento .controlli-peso button:nth-child(even){
+    background:#0f766e;
+}
+.cardAlimento .controlli-peso button:hover{
+    filter:brightness(1.15);
+}
+.semaforo{
+    padding:12px;
+    border-radius:10px;
+    font-weight:bold;
+    margin-top:10px;
+}
+.semaforo small{
+    font-weight:normal;
+    display:block;
+    margin-top:6px;
+}
+.ig-verde{
+    background:#14532d;
+    color:#86efac;
+}
+.ig-giallo{
+    background:#78350f;
+    color:#fde68a;
+}
+.ig-rosso{
+    background:#7f1d1d;
+    color:#fca5a5;
+}
+.ig-grigio{
+    background:#334155;
+    color:#cbd5e1;
+}
+.controllo-obiettivo-pasto{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:12px 0 16px;
+}
+.controllo-obiettivo-pasto label{
+    margin:0;
+    white-space:nowrap;
+    font-size:14px;
+}
+.controllo-obiettivo-pasto input{
+    width:76px;
+    min-width:76px;
+    padding:7px 8px;
+    margin:0;
+    font-size:14px;
+    text-align:center;
+}
+.controllo-obiettivo-pasto button{
+    margin:0;
+    padding:9px 12px;
+    font-size:13px;
+}
+.riga-barre{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    align-items:flex-start;
+    margin-top:15px;
+}
+.colonna-barre{
+    flex:1 1 240px;
+    min-width:0;
+}
+.colonna-totale{
+    flex:1 1 220px;
+    min-width:0;
+}
+.colonna-barre .controllo-obiettivo-pasto{
+    margin:0 0 12px;
+}
+.colonna-barre progress{
+    height:14px;
+    margin:2px 0 10px;
+}
+.colonna-barre div{
+    font-size:14px;
+}
+.colonna-totale .pasto{
+    margin-bottom:0;
+}
+#btnBilancia{
+    width:100%;
+    margin:12px 0 0;
+}
+.colonna-totale .evidenza{
+    font-size:18px;
+}
+.griglia-rapida{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:0 12px;
+}
+.nota{
+    font-size:13px;
+    color:#94a3b8;
+    margin-top:4px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>🥗 Calcolatore Dieta a Zona</h1>
+
+<button type="button" id="btnInstalla" class="calcola" style="display:none;width:100%;margin:0 0 15px" onclick="installaApp()">📲 Installa l'app sul telefono</button>
+
+<div class="card">
+
+<div class="accordion-header" onclick="toggleCalcoloRapido()">
+    <h3 style="margin:0;">⚡ Calcolo rapido blocchi</h3>
+    <span id="iconaRapido">▼</span>
+</div>
+
+<div id="contenitoreRapido">
+
+    <label for="rapidoNome">Nome alimento (facoltativo)</label>
+    <input type="text" id="rapidoNome" maxlength="120" placeholder="Es. Barretta proteica" autocomplete="off">
+
+    <div class="griglia-rapida">
+        <div>
+            <label for="rapidoP">Proteine per 100 g</label>
+            <input type="text" id="rapidoP" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+        <div>
+            <label for="rapidoC">Carboidrati per 100 g</label>
+            <input type="text" id="rapidoC" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+        <div>
+            <label for="rapidoG">Grassi per 100 g</label>
+            <input type="text" id="rapidoG" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+        <div>
+            <label for="rapidoQ">Quantità (g)</label>
+            <input type="text" id="rapidoQ" inputmode="decimal" value="100" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+    </div>
+
+    <div id="risultatoRapido" class="pasto" style="margin-top:15px"></div>
+
+    <div class="azioni-alimento">
+        <button type="button" class="salva" onclick="salvaRapidoComeAlimento()">💾 Salva come alimento</button>
+        <button type="button" class="elimina" onclick="azzeraRapido()">🧹 Azzera</button>
+    </div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<label for="tipoPasto">Tipo Pasto</label>
+<select id="tipoPasto" onchange="aggiornaSuggerimenti()">
+<option>Colazione</option>
+<option>Pranzo</option>
+<option>Cena</option>
+<option>Spuntino</option>
+</select>
+
+<label for="alimento">Alimento Selezionato</label>
+<input type="text" id="alimento" readonly>
+
+<div class="azioni-alimento">
+<button class="salva" onclick="apriNuovoAlimento()">➕ Nuovo Alimento</button>
+<button class="salva" id="btnModifica" onclick="modificaAlimentoSelezionato()" disabled>✏️ Modifica Alimento</button>
+<button class="backup" id="btnPreferito" onclick="togglePreferitoSelezionato()" disabled>⭐ Aggiungi ai preferiti</button>
+<button id="btnTorna" class="backup" style="display:none;" onclick="tornaAlDatabase()">↩️ Torna al Database</button>
+</div>
+
+<label for="categoriaFiltro">Categoria</label>
+<select id="categoriaFiltro" onchange="filtraAlimentiCompleto()">
+    <option value="Tutti">Tutti</option>
+    <option value="Proteine">Proteine</option>
+    <option value="Carboidrati">Carboidrati</option>
+    <option value="Grassi">Grassi</option>
+    <option value="Misto">Misti (più macronutrienti)</option>
+</select>
+
+<label for="filtroQualita">Valutazione Zona</label>
+<select id="filtroQualita" onchange="filtraAlimentiCompleto()">
+    <option value="Tutte">Tutte</option>
+    <option value="Favorevole">✅ Favorevole</option>
+    <option value="Moderazione">⚠️ Moderazione</option>
+    <option value="Da evitare">❌ Da evitare</option>
+</select>
+
+<label for="filtroPreferiti">Mostra</label>
+<select id="filtroPreferiti" onchange="filtraAlimentiCompleto()">
+    <option value="Tutti">Tutti gli alimenti</option>
+    <option value="Preferiti">⭐ Solo preferiti</option>
+</select>
+
+<div id="areaDatabase">
+    <label for="ricercaAlimento">Cerca Alimento</label>
+    <input type="text" id="ricercaAlimento" placeholder="Es. Yogurt, Banana, Riso..." onkeyup="filtraAlimentiCompleto()">
+    <select id="alimentoSelezionato" onchange="selezionaAlimento()"></select>
+</div>
+
+<div id="areaManuale" style="display:none;">
+<label for="alimentoManuale">Nome Alimento</label>
+<input type="text" id="alimentoManuale" maxlength="120" placeholder="Es. Barretta Proteica">
+
+<label for="proteine">Proteine per 100g</label>
+<input type="number" id="proteine" step="0.01" min="0" oninput="calcola()">
+
+<label for="carbo">Carboidrati per 100g</label>
+<input type="number" id="carbo" step="0.01" min="0" oninput="calcola()">
+
+<label for="grassi">Grassi per 100g</label>
+<input type="number" id="grassi" step="0.01" min="0" oninput="calcola()">
+
+<label for="qualitaManuale">Valutazione Zona</label>
+<select id="qualitaManuale">
+    <option value="Favorevole">✅ Favorevole</option>
+    <option value="Moderazione" selected>⚠️ Moderazione</option>
+    <option value="Da evitare">❌ Da evitare</option>
+</select>
+
+<button class="backup" onclick="salvaAlimentoPersonalizzato()">⭐ Salva nel Database</button>
+</div>
+
+<label for="peso">Quantità consumata (g)</label>
+<input type="number" id="peso" step="1" min="0" value="100" oninput="calcola()">
+
+<button class="calcola" onclick="calcola()">Calcola</button>
+<button class="calcola" onclick="aggiungiAlPasto()">➕ Aggiungi al Pasto</button>
+<button class="salva" onclick="salvaPasto()">💾 Salva Pasto</button>
+
+<hr>
+
+<div class="accordion-header" onclick="toggleAlimentiPersonalizzati()">
+    <h3 style="margin:0;">📚 Alimenti Personalizzati</h3>
+    <span id="iconaAlimenti">►</span>
+</div>
+
+<div id="contenitoreAlimenti" style="display:none;">
+    <div id="listaAlimentiPersonalizzati">Nessun alimento personalizzato</div>
+</div>
+
+<div style="margin-top:20px">
+
+<div>Blocchi Proteine: <b id="bp">0</b></div>
+<div>Blocchi Carboidrati: <b id="bc">0</b></div>
+<div>Blocchi Grassi: <b id="bg">0</b></div>
+
+<hr>
+
+<div class="riga-barre">
+
+<div class="colonna-barre">
+<div class="controllo-obiettivo-pasto">
+    <div class="campo-obiettivo-pasto">
+        <label for="blocchiTargetPasto">🎯 Blocchi obiettivo pasto</label>
+        <input type="number" id="blocchiTargetPasto" value="2" min="0.5" max="20" step="0.5" oninput="aggiornaBarrePasto()">
+    </div>
+</div>
+
+<div>Proteine: <span id="statoPastoProt">0 / 2</span></div>
+<progress id="barraPastoProt" value="0" max="2"></progress>
+<div>Carboidrati: <span id="statoPastoCarbo">0 / 2</span></div>
+<progress id="barraPastoCarbo" value="0" max="2"></progress>
+<div>Grassi: <span id="statoPastoGrassi">0 / 2</span></div>
+<progress id="barraPastoGrassi" value="0" max="2"></progress>
+</div>
+
+<div class="colonna-totale">
+<div class="pasto" id="boxTotalePasto">
+    <div id="totalePastoCorrente">
+        <div class="evidenza">🍽️ Totale Pasto<br><br>P: 0 | C: 0 | G: 0</div>
+    </div>
+    <button type="button" class="calcola" id="btnBilancia" onclick="bilanciaPastoZona()">⚖️ Bilancia il pasto</button>
+</div>
+<div id="semaforoPasto" class="semaforo ig-grigio">⚪ Nessun alimento</div>
+</div>
+
+</div>
+
+<h3>🍽️ Pasto Corrente</h3>
+<div id="pastoCorrente">Nessun alimento aggiunto</div>
+
+<div id="suggerimentiPasto" class="pasto" style="display:none;margin-top:15px"></div>
+
+</div>
+
+<button class="backup" onclick="salvaPastoPreferito()">⭐ Salva pasto come preferito</button>
+<button class="elimina" onclick="svuotaPasto()">🗑️ Svuota Pasto</button>
+
+</div>
+
+<div class="card">
+
+<div class="accordion-header" onclick="togglePastiPreferiti()">
+    <h2 style="margin:0;">⭐ Pasti Preferiti</h2>
+    <span id="iconaPreferiti">►</span>
+</div>
+
+<div id="contenitorePreferiti" style="display:none;">
+    <div id="elencoPastiPreferiti">Nessun pasto preferito</div>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="accordion-header" onclick="togglePastiSalvati()">
+    <h2 style="margin:0;">📋 Pasti Salvati</h2>
+    <span id="iconaPasti">►</span>
+</div>
+
+<div id="contenitorePasti" style="display:none;">
+    <div id="elenco"></div>
+</div>
+
+<button class="backup" onclick="esportaBackup()">📦 Backup</button>
+<button class="salva" onclick="document.getElementById('fileImport').click()">Ripristina</button>
+<input type="file" id="fileImport" accept=".json" style="display:none" onchange="importaBackup(event)">
+
+</div>
+
+<div class="card">
+
+<h2>Totali Giornalieri</h2>
+
+<div style="margin-top:20px">
+<h3>Alimento Selezionato</h3>
+<div id="infoAlimento">Nessun alimento selezionato</div>
+</div>
+
+<div id="semaforoIG">⚪ Nessun alimento selezionato</div>
+
+<div>Blocchi Proteine: <b id="totProt">0</b></div>
+<div>Blocchi Carboidrati: <b id="totCarbo">0</b></div>
+<div>Blocchi Grassi: <b id="totGrassi">0</b></div>
+
+<hr>
+
+<h2>🎯 Obiettivo Giornaliero Zona</h2>
+
+<label for="obiettivoBlocchi">Blocchi Obiettivo</label>
+<input type="number" id="obiettivoBlocchi" value="12" oninput="aggiornaObiettivo()">
+
+<br><br>
+
+<div>
+<div>Proteine: <span id="statoProteine">0 / 12</span></div>
+<progress id="barraProteine" value="0" max="12"></progress>
+</div>
+<br>
+<div>
+<div>Carboidrati: <span id="statoCarbo">0 / 12</span></div>
+<progress id="barraCarbo" value="0" max="12"></progress>
+</div>
+<br>
+<div>
+<div>Grassi: <span id="statoGrassi">0 / 12</span></div>
+<progress id="barraGrassi" value="0" max="12"></progress>
+</div>
+
+<hr>
+
+</div>
+
+<div class="card">
+
+    <div class="accordion-header" onclick="toggleCostruttoreZona()">
+        <h3 style="margin:0;">🎯 Costruisci Pasto Zona</h3>
+        <span id="iconaZona">►</span>
+    </div>
+
+    <div id="contenitoreZona" style="display:none;">
+
+        <label for="proteinaZona">Proteina</label>
+        <input type="text" id="ricercaProteinaZona" placeholder="Scrivi per cercare la proteina..." autocomplete="off" oninput="inizializzaCostruttoreZona()">
+        <select id="proteinaZona"></select>
+
+        <label for="carboZona">Carboidrato</label>
+        <input type="text" id="ricercaCarboZona" placeholder="Scrivi per cercare il carboidrato..." autocomplete="off" oninput="inizializzaCostruttoreZona()">
+        <select id="carboZona"></select>
+
+        <label for="grassoZona">Grasso</label>
+        <input type="text" id="ricercaGrassoZona" placeholder="Scrivi per cercare il grasso..." autocomplete="off" oninput="inizializzaCostruttoreZona()">
+        <select id="grassoZona"></select>
+
+        <label for="blocchiRichiesti">🧊 Numero Blocchi</label>
+        <input type="number" id="blocchiRichiesti" value="2" min="0.5" step="0.5">
+
+        <button class="calcola" onclick="calcolaBlocchiZona()">Calcola Quantità</button>
+
+        <div id="risultatoZona"></div>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+// Database alimenti per la Dieta a Zona - valori per 100 g di alimento.
+//  categoria        : "Proteine" | "Carboidrati" | "Grassi" | "Misto" (nessun macronutriente nettamente dominante)
+//  qualita          : "Favorevole" | "Moderazione" | "Da evitare"  (classificazione secondo i criteri della Dieta a Zona)
+const databaseCompleto = [
+  { nome: "ACCIUGA O ALICE", proteine: 16.8, grassi: 2.6, carboidrati: 1.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "ACCIUGA SOTT'OLIO", proteine: 25.9, grassi: 11.3, carboidrati: 0.2, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "ACETO DI MELE", proteine: 0, grassi: 0, carboidrati: 5.9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "ACETO DI VINO", proteine: 0, grassi: 0, carboidrati: 5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "AGNELLO", proteine: 20, grassi: 2.2, carboidrati: 0.3, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "AGNELLO COSTOLETTE", proteine: 18, grassi: 35, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "ALBICOCCHE (una media = 50g)", proteine: 0.4, grassi: 0.1, carboidrati: 6.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "ALICI SOTT'OLIO", proteine: 25.9, grassi: 11, carboidrati: 0.2, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "ALICI SOTTO SALE", proteine: 25, grassi: 3.1, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "ALL-BRAN Kellog's", proteine: 13, grassi: 4.6, carboidrati: 46, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "AMARENE", proteine: 0.8, grassi: 0, carboidrati: 10.2, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "ANANAS (una fetta = 50g)", proteine: 0.5, grassi: 0, carboidrati: 10, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "ANANAS a fette del Monte (senza zucchero)", proteine: 0.4, grassi: 0.1, carboidrati: 15.5, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "ANATRA DOMESTICA", proteine: 21.4, grassi: 8.2, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "ANGUILLA DI FIUME", proteine: 11.8, grassi: 24, carboidrati: 0.1, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "ANGUILLA DI MARE", proteine: 14.6, grassi: 20, carboidrati: 0.7, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "ARACHIDI (una = 0,5g)", proteine: 29, grassi: 50, carboidrati: 8.5, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "ARAGOSTA", proteine: 16.2, grassi: 1.9, carboidrati: 1, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "ARANCE (una media = 200g)", proteine: 0.7, grassi: 0.2, carboidrati: 7.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "ARANCE rosse (spremuta)", proteine: 0.8, grassi: 0.2, carboidrati: 9.5, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "ARANCIATA", proteine: 0.1, grassi: 0, carboidrati: 10, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "ARINGA", proteine: 16.5, grassi: 16.7, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "ARINGA AFFUMICATA", proteine: 19.9, grassi: 13, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "ARINGA MARINATA", proteine: 18.3, grassi: 14, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "ARINGA SALATA", proteine: 19.8, grassi: 15, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "ASIAGO", proteine: 22, grassi: 32, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "ASPARAGI DI BOSCO", proteine: 4.6, grassi: 0.2, carboidrati: 4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "ASPARAGI DI CAMPO", proteine: 3.6, grassi: 0.2, carboidrati: 3.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "ASPARAGI DI SERRA", proteine: 3, grassi: 0.1, carboidrati: 3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "ASPARAGI IN SCATOLA", proteine: 2.4, grassi: 0.1, carboidrati: 4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "AVENA (decorticata, sgusciata)", proteine: 12.2, grassi: 8.1, carboidrati: 58.3, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "AVOCADO", proteine: 4.4, grassi: 23, carboidrati: 1.8, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "BACCALA' AMMOLLATO", proteine: 21.6, grassi: 1, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "BACCALA' SECCO", proteine: 29, grassi: 0.7, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "BANANE (una media = 180g)", proteine: 1.2, grassi: 0.3, carboidrati: 15.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BARBABIETOLE ROSSE", proteine: 1.1, grassi: 0, carboidrati: 4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "BASTONCINI DI PESCE", proteine: 11, grassi: 10, carboidrati: 15, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "BELGIOIOSO YOMO", proteine: 12, grassi: 7, carboidrati: 3, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "BELPAESE", proteine: 22, grassi: 32, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "BIETA", proteine: 1.3, grassi: 0.1, carboidrati: 2.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "BIRRA", proteine: 0.3, grassi: 0, carboidrati: 4, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BIRRA doppio malto", proteine: 0.4, grassi: 0, carboidrati: 10, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BIRRA LIGHT", proteine: 0.2, grassi: 0, carboidrati: 1.3, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BISCOTTI CON PANNA", proteine: 13.8, grassi: 20.5, carboidrati: 62.2, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BISCOTTI Macine Mulino Bianco", proteine: 7.5, grassi: 21, carboidrati: 68.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BISCOTTI PER L'INFANZIA", proteine: 13.8, grassi: 8.5, carboidrati: 76.1, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BISCOTTI PRIMA COLAZIONE (uno = 7-8g)", proteine: 6.6, grassi: 7.9, carboidrati: 85.4, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BISCOTTI WAFERS", proteine: 7.1, grassi: 15, carboidrati: 77.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BISCOTTO CON CIOCCOLATO", proteine: 6, grassi: 28.6, carboidrati: 55.2, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BRESAOLA (una fetta = 7g)", proteine: 32, grassi: 2.6, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "BRIOCHE CREMA (una media = 100-110g)", proteine: 10, grassi: 19, carboidrati: 46, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BRIOCHE grande (una = 85g)", proteine: 7.2, grassi: 18.3, carboidrati: 58.4, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BRIOCHE MARMELLATA (una media = 90g)", proteine: 9.2, grassi: 19, carboidrati: 46, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BRIOCHE piccola (una = 60-75 g)", proteine: 2.5, grassi: 10, carboidrati: 24, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BROCCOLETTI DI RAPA", proteine: 2.9, grassi: 0.3, carboidrati: 2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "BROCCOLI", proteine: 3, grassi: 0.4, carboidrati: 3.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "BUDINO ALLA CIOCCOLATA", proteine: 3.5, grassi: 18, carboidrati: 20.6, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "BUDINO VANIGLIA", proteine: 3.2, grassi: 1.6, carboidrati: 20.3, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "BURRO", proteine: 0.8, grassi: 83, carboidrati: 1.1, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "BURRO DI ARACHIDI", proteine: 24, grassi: 47, carboidrati: 21, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "CACAO AMARO IN POLVERE", proteine: 20.4, grassi: 26, carboidrati: 11.5, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "CACHI", proteine: 0.6, grassi: 0.3, carboidrati: 16, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CACIOCAVALLO", proteine: 37.7, grassi: 31, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "CACIOTTA DI PECORA", proteine: 27.7, grassi: 27, carboidrati: 2.1, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "CACIOTTA TOSCANA", proteine: 24.6, grassi: 30, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "CACIOTTINA FRESCA", proteine: 17.3, grassi: 21, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CAFFE ESPRESSO", proteine: 0.01, grassi: 0.18, carboidrati: 1.53, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CAFFÈ IN POLVERE", proteine: 10.4, grassi: 15, carboidrati: 28.5, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "CALAMARO", proteine: 12.6, grassi: 1.7, carboidrati: 0.6, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "CAMEMBERT", proteine: 20.9, grassi: 23.7, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "CANNELLONI", proteine: 7.6, grassi: 10, carboidrati: 12.8, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "CANNOLI ALLA CREMA", proteine: 6.2, grassi: 21, carboidrati: 42.2, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CAPELLINI n.1 Barilla", proteine: 12, grassi: 1.5, carboidrati: 72.2, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CAPPERI", proteine: 2.6, grassi: 0.1, carboidrati: 2.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CARCIOFI", proteine: 2.7, grassi: 0.2, carboidrati: 2.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CARDI", proteine: 0.6, grassi: 0.1, carboidrati: 1.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CARNE di manzo magra", proteine: 20.7, grassi: 5.1, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CARNE IN SCATOLA IN GELATINA", proteine: 13, grassi: 1, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CARNE MONTANA IN SCATOLA", proteine: 12, grassi: 2, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CAROTE (una media = 100g)", proteine: 1.1, grassi: 0.2, carboidrati: 7.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CARPA", proteine: 18.9, grassi: 7.1, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CASTAGNE (una media = 8g)", proteine: 3.2, grassi: 1.8, carboidrati: 33.4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CAVALLO", proteine: 21.7, grassi: 2.7, carboidrati: 0.5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CAVIALE", proteine: 26.9, grassi: 15, carboidrati: 3.3, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CAVOLFIORE (uno medio = 400g)", proteine: 3.2, grassi: 0.2, carboidrati: 2.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CAVOLI DI BRUXELLES", proteine: 4.2, grassi: 0.5, carboidrati: 4.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CAVOLINI DI BRUXELLES SURGELATI PICARD", proteine: 3.5, grassi: 1.3, carboidrati: 2.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CAVOLO BROCCOLO VERDE RAMOSO", proteine: 3.4, grassi: 0.3, carboidrati: 2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CAVOLO CAPPUCCIO ROSSO", proteine: 1.9, grassi: 0.2, carboidrati: 2.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CAVOLO CAPPUCCIO VERDE", proteine: 2.1, grassi: 0.1, carboidrati: 2.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CECI", proteine: 21.8, grassi: 4.9, carboidrati: 54.3, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CECI Biofood", proteine: 4.6, grassi: 1.4, carboidrati: 8.5, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CECI BONDUELLE (110g)", proteine: 6.4, grassi: 2.4, carboidrati: 8.4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CECI SELEX (250g)", proteine: 7.9, grassi: 2, carboidrati: 19.5, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CEFALO MUGGINE", proteine: 15.8, grassi: 6.8, carboidrati: 0.7, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "CERNIA", proteine: 17, grassi: 2, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "CETRIOLI (uno medio = 200g)", proteine: 0.7, grassi: 0.5, carboidrati: 1.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CHEDDAR", proteine: 25, grassi: 31, carboidrati: 0.5, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "CICORIA", proteine: 1.2, grassi: 0.1, carboidrati: 1.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CILIEGIE (una media = 5g)", proteine: 0.8, grassi: 0.1, carboidrati: 9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CIOCCOLATO AL LATTE", proteine: 8.9, grassi: 38, carboidrati: 50.8, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "CIOCCOLATO FONDENTE", proteine: 5.8, grassi: 34, carboidrati: 56.7, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "CIPOLLE", proteine: 1, grassi: 0.1, carboidrati: 5.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CIPOLLE BORETTANE ALL'AGRODOLCE COOP", proteine: 0.5, grassi: 1.5, carboidrati: 5.9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CIPOLLINE", proteine: 1.3, grassi: 0.1, carboidrati: 8.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "CLEMENTINE", proteine: 0.9, grassi: 0.1, carboidrati: 8.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "COCA COLA", proteine: 0, grassi: 0, carboidrati: 10.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "COCCO", proteine: 3.5, grassi: 35.3, carboidrati: 9.4, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "COCOMERO", proteine: 0.4, grassi: 0, carboidrati: 3.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CONIGLIO grassa", proteine: 18.1, grassi: 14, carboidrati: 0.4, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CONIGLIO magra", proteine: 23.7, grassi: 0.6, carboidrati: 0.6, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "CONIGLIO semigrassa", proteine: 22.1, grassi: 5.3, carboidrati: 0.5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "CONSERVA DI POMODORO", proteine: 3.9, grassi: 0.4, carboidrati: 20.4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "CORN flakes integrali kellog's", proteine: 10, grassi: 2.5, carboidrati: 66, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CORNETTO Algida (uno = 125g)", proteine: 4.2, grassi: 14, carboidrati: 20, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "CORNFLAKES", proteine: 6.6, grassi: 0.8, carboidrati: 88.1, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CORNFLAKES KELLOG'S SPECIAL FRUTTI ROSSI", proteine: 14, grassi: 1, carboidrati: 75, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CORNFLAKES TREMULINI", proteine: 7.9, grassi: 6.1, carboidrati: 82.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "COTECHINO", proteine: 20.6, grassi: 34.1, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "COTTAGE CHEESE", proteine: 13.74, grassi: 1.93, carboidrati: 3.63, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "COZZA O MITILO", proteine: 11.7, grassi: 2.7, carboidrati: 3.4, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "CRACKERS INTEGRALI COOP", proteine: 12.5, grassi: 12.9, carboidrati: 59, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CRACKERS integrali Misura", proteine: 13.6, grassi: 10.4, carboidrati: 62.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CRACKERS MISURA ALLA SOIA", proteine: 15, grassi: 15.1, carboidrati: 60.2, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CRACKERS SALATI (un pacchetto = 30g)", proteine: 9.4, grassi: 10, carboidrati: 80.1, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CREMA DI CAFFE' - LIQUORI", proteine: 2.8, grassi: 15.7, carboidrati: 20.9, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "CREMA DI NOCCIOLE E CACAO", proteine: 6.9, grassi: 32, carboidrati: 58.1, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "CREMA NOVI", proteine: 11.7, grassi: 35.6, carboidrati: 42.7, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "CREME CARAMEL", proteine: 3.4, grassi: 1.5, carboidrati: 21.9, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CREMINO (fior di latte ricoperto cioccolato, uno = 44g)", proteine: 4.2, grassi: 14, carboidrati: 20, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "CRESCENZA", proteine: 16.1, grassi: 23.3, carboidrati: 1.9, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "CROSTATA CON MARMELLATA", proteine: 4.9, grassi: 8.2, carboidrati: 65.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "CRUSCA", proteine: 13, grassi: 4, carboidrati: 45, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "DADI DA BRODO", proteine: 15.7, grassi: 19, carboidrati: 5, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "DATTERI SECCHI", proteine: 2.7, grassi: 0.6, carboidrati: 63.1, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "DENTICE", proteine: 17.2, grassi: 4, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "DOLCE VERDE", proteine: 19.1, grassi: 20, carboidrati: 2.5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "DOLCIFICANTE ESSELUNGA", proteine: 1.78, grassi: 0, carboidrati: 89.24, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "EMMENTHAL", proteine: 28.5, grassi: 31, carboidrati: 3.6, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "ENERZONA Frollini 40-30-30 (1 frollino 6g)", proteine: 29.6, grassi: 15.7, carboidrati: 38, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "ENERZONA Istant Meal (busta 50g = 2 blocchi)", proteine: 32.3, grassi: 14.4, carboidrati: 43, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "ENERZONA Nutrition Bar (barretta 55g = 2 blocchi)", proteine: 27.3, grassi: 11, carboidrati: 45.5, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "ENERZONA Pasta Fusilli (porzione 60g)", proteine: 36.3, grassi: 2.2, carboidrati: 47, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "ENERZONA proteine Soia 90% (misurino 8g)", proteine: 90, grassi: 3.6, carboidrati: 0.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "ENERZONA proteine Whey 90% (misurino 8g)", proteine: 90, grassi: 0.5, carboidrati: 1, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "ENERZONA Snack (barretta 27g = 1 blocco)", proteine: 26, grassi: 11.3, carboidrati: 33.7, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "ENERZONA Vellutata alle Verdure (busta 48g)", proteine: 29, grassi: 5.7, carboidrati: 39.6, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "EXQUISA EXTRA LIGHT", proteine: 13.5, grassi: 5, carboidrati: 4, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FAGIANO", proteine: 24.3, grassi: 5.2, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "FAGIOLI", proteine: 23.6, grassi: 2.5, carboidrati: 51.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FAGIOLI BONDUELLE", proteine: 7.3, grassi: 0.7, carboidrati: 6.9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FAGIOLI BORLOTTI VALFRUTTA", proteine: 7.4, grassi: 0.6, carboidrati: 14.4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FAGIOLI cannellini (Valfrutta in scatola)", proteine: 7.4, grassi: 0.6, carboidrati: 14.4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FAGIOLI di soia cotti al vapore valfrutta", proteine: 9.3, grassi: 4.5, carboidrati: 5, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "FAGIOLI ROSSI BONDUELLE", proteine: 9, grassi: 0.6, carboidrati: 16.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FAGIOLINI", proteine: 2.1, grassi: 0, carboidrati: 2.4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FAGIOLINI FINISSIMI SMA-AUCHAN", proteine: 1.2, grassi: 0.1, carboidrati: 4.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FARAONA coscia", proteine: 24.3, grassi: 1.8, carboidrati: 0.2, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FARAONA petto", proteine: 25.1, grassi: 0.7, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FARINA DI FRUMENTO TIPO O", proteine: 11.5, grassi: 1, carboidrati: 76.9, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "FARINA DI MAIS", proteine: 8.7, grassi: 2.7, carboidrati: 81.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "FARINA DI RISO", proteine: 7.3, grassi: 0.5, carboidrati: 87.8, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "FARINA DI SOIA", proteine: 34.5, grassi: 20.65, carboidrati: 35.2, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "FARRO", proteine: 15.1, grassi: 2.5, carboidrati: 67.1, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FAVE", proteine: 5.4, grassi: 0, carboidrati: 4.2, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FAVE SGUSCIATE", proteine: 27.2, grassi: 3, carboidrati: 55.3, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FECOLA DI PATATE", proteine: 1.4, grassi: 0, carboidrati: 91.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "FESA DI TACCHINO", proteine: 23.7, grassi: 1.2, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FESA DI TACCHINO - COTTA", proteine: 29.5, grassi: 1.3, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FETA", proteine: 15.6, grassi: 20.2, carboidrati: 1.5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "FETTE BISCOTTATE", proteine: 11.3, grassi: 6, carboidrati: 83, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "FETTE biscottate integrali Mulino Bianco", proteine: 12, grassi: 6, carboidrati: 69, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FETTE INTEGRALI MISURA", proteine: 13.9, grassi: 4.5, carboidrati: 67, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FICHI (uno medio 80g)", proteine: 0.9, grassi: 0.2, carboidrati: 11.2, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FICHI D'INDIA", proteine: 0.8, grassi: 0.1, carboidrati: 13, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FILETTI DI MERLUZZO SURGELATI FINDUS", proteine: 15, grassi: 0.5, carboidrati: 0.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FILETTI di sgombro all'olio di oliva Rio Mare", proteine: 21.4, grassi: 27.2, carboidrati: 0, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "FINOCCHI", proteine: 1.2, grassi: 0, carboidrati: 1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FIOCCHI AVENA - MERCANTI", proteine: 12, grassi: 7, carboidrati: 68.9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FIOCCHI D'AVENA", proteine: 16, grassi: 6.3, carboidrati: 67, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FIOCCHI D'AVENA BIO EUVITA", proteine: 13, grassi: 7.5, carboidrati: 67, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "FIOCCHI DI LATTE - EXQUISA", proteine: 13, grassi: 4.3, carboidrati: 1.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FIOCCHI DI LATTE - VANETTA", proteine: 13.2, grassi: 4.6, carboidrati: 2, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FIOCCHI di latte Flain (FAGE)", proteine: 11, grassi: 4, carboidrati: 2, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FIOCCHI di latte Naturella della Karwendel", proteine: 13, grassi: 4.3, carboidrati: 1.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FIOCCHI di Latte Vitasnella", proteine: 11.2, grassi: 3.9, carboidrati: 2.3, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "FIOR DI BROCCOLI SURGELATI SMA-AUCHAN", proteine: 1.7, grassi: 0.2, carboidrati: 4.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FIOR DI LATTE", proteine: 20.6, grassi: 20, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "FIORI DI ZUCCA", proteine: 1.7, grassi: 0.4, carboidrati: 0.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FOGLIE DI RAPA", proteine: 2.6, grassi: 0.1, carboidrati: 2.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FONTINA", proteine: 24.5, grassi: 27, carboidrati: 0.8, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "FORMAGGINO", proteine: 11.2, grassi: 27, carboidrati: 6, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "FORMAGGINO (meno grasso)", proteine: 14.7, grassi: 17, carboidrati: 6.5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "FORMAGGIO BEL PAESE", proteine: 25.4, grassi: 30, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "FORMAGGIO quark light", proteine: 4.1, grassi: 12.3, carboidrati: 0.2, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "FRAGOLE (una media = 30g)", proteine: 0.9, grassi: 0.4, carboidrati: 5.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FRUTTOSIO (un cucchiaino = 5g)", proteine: 0, grassi: 0, carboidrati: 100, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "FUNGHI COLTIVATI", proteine: 3.7, grassi: 0.2, carboidrati: 0.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FUNGHI COLTIVATI. COTTI", proteine: 4.8, grassi: 0.3, carboidrati: 0.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FUNGHI OVULI", proteine: 2, grassi: 0.3, carboidrati: 0, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FUNGHI PORCINI", proteine: 3.9, grassi: 0.7, carboidrati: 0, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "FUSILLI Integrali n. 146 Delverde", proteine: 11.5, grassi: 1.5, carboidrati: 73.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "GALBANINO", proteine: 23, grassi: 27, carboidrati: 0.1, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "GALLETTE DI RISO", proteine: 6.4, grassi: 0.4, carboidrati: 88.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "GALLINA", proteine: 20.9, grassi: 12, carboidrati: 0.2, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "GAMBERO", proteine: 13.6, grassi: 0.6, carboidrati: 2.9, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "GELATO ALLA FRUTTA (una porzione = 83g)", proteine: 4, grassi: 9, carboidrati: 20, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "GELATO ALLE CREME (una porzione = 83g)", proteine: 4.2, grassi: 13.7, carboidrati: 20.7, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "GELATO FIOR DI LATTE (una porzione = 83g)", proteine: 4.2, grassi: 14, carboidrati: 20.7, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "GERMOGLI DI SOIA", proteine: 6.2, grassi: 1.4, carboidrati: 3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "GORGONZOLA", proteine: 19.4, grassi: 31, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "GRANA", proteine: 35.5, grassi: 25, carboidrati: 3.7, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "GRANA PADANO GRATTUGGIATO TRENTIN", proteine: 33, grassi: 28, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "GRISSINI", proteine: 12.3, grassi: 13.9, carboidrati: 69, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "GROVIERA", proteine: 30.6, grassi: 29, carboidrati: 1.5, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "HAMBURGER", proteine: 12.7, grassi: 14, carboidrati: 11.8, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "HAMBURGER VEGETALE", proteine: 20, grassi: 4.6, carboidrati: 7.8, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "HAMBURGER VEGETALE VALSOIA", proteine: 17, grassi: 7, carboidrati: 5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "INDIVIA", proteine: 0.9, grassi: 0.3, carboidrati: 2.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "INSTANT Noodles", proteine: 10, grassi: 17, carboidrati: 65, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "JOCCA", proteine: 10, grassi: 8.5, carboidrati: 3, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "KELLOG'S SPECIAL K", proteine: 15, grassi: 1, carboidrati: 75, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "KETCHUP", proteine: 0.14, grassi: 0.31, carboidrati: 11.8, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "KIWI", proteine: 1.2, grassi: 0.6, carboidrati: 9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LAMPONI", proteine: 1, grassi: 0.6, carboidrati: 6.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LARDO", proteine: 0, grassi: 99, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "LATTE condensato zuccherato", proteine: 8.7, grassi: 9, carboidrati: 56.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "LATTE di capra", proteine: 3.9, grassi: 4.3, carboidrati: 4.7, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "LATTE di pecora", proteine: 5.3, grassi: 6.9, carboidrati: 5.2, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "LATTE di vacca intero", proteine: 3.1, grassi: 3.4, carboidrati: 4.8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "LATTE di vacca parzialmente scremato", proteine: 3.5, grassi: 1.8, carboidrati: 5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTE di vacca scremato", proteine: 3.6, grassi: 0.2, carboidrati: 5.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTE Fresco BIO ESSELUNGA Parzialmente Scremato", proteine: 3.3, grassi: 1.6, carboidrati: 4.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTE in polvere intero", proteine: 25.7, grassi: 25, carboidrati: 42, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "LATTE in polvere scremato", proteine: 33.1, grassi: 0.9, carboidrati: 56.2, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "LATTE INTERO TORVIS Alta Qualità", proteine: 3.2, grassi: 3.6, carboidrati: 4.8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "LATTE PARMALAT OMEGA 3", proteine: 3.2, grassi: 1.7, carboidrati: 4.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTE SCREMATO CARNIA", proteine: 3.2, grassi: 1.6, carboidrati: 4.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTE SOIA ALPRO", proteine: 3.7, grassi: 2.2, carboidrati: 3.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTE SOIA ALPRO CALCIO", proteine: 3.6, grassi: 2.1, carboidrati: 2.9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTE UHT BIO ESSELUNGA Parzialmente Scremato", proteine: 3.1, grassi: 1.6, carboidrati: 4.9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTERIA", proteine: 30.7, grassi: 36, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "LATTUGA", proteine: 1.8, grassi: 0.4, carboidrati: 2.2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTUGA A CAPPUCCIO", proteine: 1.5, grassi: 0.2, carboidrati: 3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LATTUGA DA TAGLIO", proteine: 1.1, grassi: 0.1, carboidrati: 2.2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LECITINA di soia", proteine: 8, grassi: 0, carboidrati: 84, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "LECITINA DI SOIA E SELENIO", proteine: 0, grassi: 91, carboidrati: 8, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "LENTICCHI", proteine: 25, grassi: 2.5, carboidrati: 54, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "LIEVITO DI BIRRA (compresso)", proteine: 12.1, grassi: 0.4, carboidrati: 1.1, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "LIMONI", proteine: 0.6, grassi: 0, carboidrati: 2.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "LINGUA DI BOVINO", proteine: 17.1, grassi: 18, carboidrati: 0.4, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "LUCCIO", proteine: 18.7, grassi: 0.6, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "LUMACA", proteine: 12.9, grassi: 1.7, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "MAIALE (bistecca)", proteine: 18.3, grassi: 3, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MAIALE (carne magra)", proteine: 19.9, grassi: 6.8, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MAIALE (coscia)", proteine: 18.7, grassi: 3, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MAIONESE", proteine: 4.2, grassi: 70, carboidrati: 2.2, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "MAIONESE legeresse kraft", proteine: 1.1, grassi: 39, carboidrati: 4.3, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "MAIS VALFRUTTA", proteine: 3.3, grassi: 1.2, carboidrati: 17.8, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "MANDARANCI", proteine: 0.8, grassi: 0.2, carboidrati: 12.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MANDARINI", proteine: 0.9, grassi: 0.3, carboidrati: 17.6, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MANDORLE (una = 1g)", proteine: 22, grassi: 55.3, carboidrati: 4.6, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "MANDORLE SGUSCIATE", proteine: 16, grassi: 51, carboidrati: 4, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "MANGO", proteine: 1, grassi: 0.2, carboidrati: 12.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "MANZO (FESA)", proteine: 21.8, grassi: 1.8, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MANZO (FILETTO)", proteine: 20.5, grassi: 5, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MANZO (NOCE)", proteine: 21.3, grassi: 2.3, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MANZO ADULTO (carne grassa)", proteine: 15.8, grassi: 29, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "MANZO ADULTO (carne semigrassa)", proteine: 18.8, grassi: 15, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "MANZO LESSATO IN GELATINA (in scatola)", proteine: 13.9, grassi: 3.5, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MARGARINA", proteine: 0.6, grassi: 84, carboidrati: 0.4, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "MARMELLATA HERO DIET", proteine: 0.8, grassi: 0.1, carboidrati: 21.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "MARMELLATA ZUEGG 100%", proteine: 1.2, grassi: 1.1, carboidrati: 35, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "MARMELLATE (un cucchiaino = 7g)", proteine: 0.5, grassi: 0, carboidrati: 58.7, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "MASCARPONE", proteine: 7.6, grassi: 47, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "MELAGRANE (una media = 200g)", proteine: 0.5, grassi: 0.2, carboidrati: 15.9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELANZANE", proteine: 1.1, grassi: 0.4, carboidrati: 2.6, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELE (una media = 150g)", proteine: 0.3, grassi: 0.1, carboidrati: 13.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELE COTOGNE (una media = 150g)", proteine: 0.3, grassi: 1, carboidrati: 6.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELE DELIZIOSE (una media = 150g)", proteine: 0.2, grassi: 0.1, carboidrati: 11.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELE GOLDEN (una media = 200g)", proteine: 0.4, grassi: 0.1, carboidrati: 10.7, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELE GRANNY SMITH (una media = 150g)", proteine: 0.5, grassi: 0.1, carboidrati: 9.4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELE IMPERATORE (una media = 150g)", proteine: 0.2, grassi: 0.1, carboidrati: 11.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELE RENETTE (una media = 150g)", proteine: 0.3, grassi: 0.1, carboidrati: 10, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MELONE D'ESTATE (una fetta 180g)", proteine: 0.8, grassi: 0.2, carboidrati: 7.4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "MELONE D'INVERNO", proteine: 0.5, grassi: 0.2, carboidrati: 4.9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "MERLUZZO", proteine: 17, grassi: 0.3, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "MIELE (un cucchiaio = 21g)", proteine: 0.6, grassi: 0, carboidrati: 80.3, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "MINESTRONE Leggerezza Orogel", proteine: 1.1, grassi: 0.2, carboidrati: 2.4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MINESTRONE o passato di verdure", proteine: 2.3, grassi: 0.3, carboidrati: 6, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MINESTRONISSIMO Orogel", proteine: 5.3, grassi: 1.3, carboidrati: 15.8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "MINIBIX AL CIOCOLATO", proteine: 8.5, grassi: 8, carboidrati: 72.1, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "MINIBIX FRUITS AND NUTS", proteine: 8.8, grassi: 3.8, carboidrati: 71.2, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "MIRTILLI", proteine: 0.9, grassi: 0.2, carboidrati: 5.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "MORTADELLA (di bovino e suino, una fetta = 15-20g)", proteine: 13.3, grassi: 37, carboidrati: 0.5, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "MORTADELLA DI SUINO", proteine: 13.7, grassi: 31.4, carboidrati: 1.7, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "MOUSSE magra Vitasnella", proteine: 6.1, grassi: 0.4, carboidrati: 9.8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "MOZZARELLA", proteine: 19.9, grassi: 16, carboidrati: 4.9, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MOZZARELLA CASTELLO", proteine: 18, grassi: 18.5, carboidrati: 3.8, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MOZZARELLA INVERNIZZI MOZARY LIGHT (125g)", proteine: 20, grassi: 10, carboidrati: 0.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "MOZZARELLA LAND", proteine: 18, grassi: 19, carboidrati: 0.3, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "MOZZARELLA Santa Lucia Galbani (125g)", proteine: 18, grassi: 20, carboidrati: 1.5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "NASELLO", proteine: 17, grassi: 0.3, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "NESPOLE", proteine: 0.4, grassi: 0.4, carboidrati: 6.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "NESTLÈ LC1 alla frutta", proteine: 3, grassi: 0.1, carboidrati: 6.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "NOCCIOLE (una = 1g)", proteine: 13.8, grassi: 64.1, carboidrati: 6.1, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "Noci dell'Amazzonia (una media = 2-3 g)", proteine: 8.1, grassi: 74.5, carboidrati: 10.8, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "NOCI FRESCHE", proteine: 10.5, grassi: 57.7, carboidrati: 5.5, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "NUTELLA (un cucchiaino = 12g)", proteine: 6.5, grassi: 31, carboidrati: 57, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "OCA", proteine: 15.8, grassi: 34, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "OLIO DI OLIVA (un cucchiaio = 10grammi)", proteine: 0, grassi: 100, carboidrati: 0, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "OLIO DI SEMI VARI", proteine: 0, grassi: 100, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "OLIVE NERE (una media = 1,7g)", proteine: 1.6, grassi: 25.1, carboidrati: 0.8, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "OLIVE VERDI (una media = 3,3g)", proteine: 0.8, grassi: 15, carboidrati: 1, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "ORATA (variante grassa, grassi 8,4 g)", proteine: 19.7, grassi: 8.4, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "ORATA (variante magra, grassi 1 g)", proteine: 19.8, grassi: 1, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "ORZO PERLATO", proteine: 12, grassi: 1, carboidrati: 69, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "OSTRICA", proteine: 10.2, grassi: 0.9, carboidrati: 5.4, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "OVOMALTINA", proteine: 11.5, grassi: 2.2, carboidrati: 74.8, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PALOMBO", proteine: 16, grassi: 1.2, carboidrati: 1.3, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "PAN CARRÈ - Mulino Bianco (una fetta = 16.5g)", proteine: 7.5, grassi: 5.5, carboidrati: 52.1, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANCETTA DI MAIALE (1 fetta = 5-7 g)", proteine: 8.4, grassi: 69, carboidrati: 1, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "PANE AL LATTE", proteine: 9, grassi: 8.7, carboidrati: 48.2, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANE Bianco Mulino Bianco (una fetta = 23.4g)", proteine: 8.5, grassi: 5, carboidrati: 47.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANE DI TIPO 0", proteine: 8.1, grassi: 0.5, carboidrati: 64, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANE DI TIPO 00 (tipo comune)", proteine: 8.2, grassi: 0.4, carboidrati: 67.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANE DI TIPO 1", proteine: 8.9, grassi: 0.6, carboidrati: 60.3, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANE INTEGRALE (una fetta = 30g)", proteine: 7.5, grassi: 1.3, carboidrati: 53.8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PANE Integrale BIO ESSELUNGA", proteine: 8.3, grassi: 5.4, carboidrati: 42.1, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PANE Integrale Mulino Bianco (una fetta = 23,4g)", proteine: 9, grassi: 5.8, carboidrati: 41.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PANE INTEGRALE PANEM (una fetta = 23g)", proteine: 10, grassi: 5, carboidrati: 41.3, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PANETTONE", proteine: 6.4, grassi: 11, carboidrati: 56.5, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANINI ALL'OLIO", proteine: 7.7, grassi: 5.8, carboidrati: 58.3, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PANNA", proteine: 2.3, grassi: 35, carboidrati: 3.4, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "PAPAIA", proteine: 3, grassi: 0.3, carboidrati: 5.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PARMIGIANO", proteine: 36, grassi: 26, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "PASSATO di verdure Orogel (Minestronissimo - 600g)", proteine: 2.6, grassi: 1.9, carboidrati: 5.6, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "PASTA ALL'UOVO", proteine: 13, grassi: 2.4, carboidrati: 78.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PASTA BARILLA", proteine: 11.5, grassi: 1.5, carboidrati: 72, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PASTA DI SEMOLA", proteine: 10.8, grassi: 0.3, carboidrati: 82.8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PASTA E FAGIOLI", proteine: 2.9, grassi: 1.3, carboidrati: 7.3, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PASTA GLUTINATA", proteine: 23.8, grassi: 0.6, carboidrati: 69.9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PASTA INTEGRALE", proteine: 13, grassi: 2.5, carboidrati: 65, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PASTA INTEGRALE - ALCENERO", proteine: 12, grassi: 2.3, carboidrati: 65.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PASTORELLA", proteine: 26.9, grassi: 29, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "PATATE (una media = 150g)", proteine: 2.1, grassi: 1, carboidrati: 18, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PATATE ARROSTO", proteine: 2.9, grassi: 4.5, carboidrati: 25.9, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PATATE BOLLITE", proteine: 1.8, grassi: 0.1, carboidrati: 17, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PATATE FRITTE (una = 7-10g)", proteine: 3.9, grassi: 6.7, carboidrati: 30.1, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PATATE NOVELLE", proteine: 2, grassi: 0.3, carboidrati: 15.8, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PECORINO", proteine: 28.5, grassi: 28, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "PEPERONCINI PICCANTI", proteine: 1.8, grassi: 0.5, carboidrati: 3.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "PEPERONI", proteine: 0.9, grassi: 0.3, carboidrati: 4.2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "PERE (una media = 150g)", proteine: 0.3, grassi: 0.1, carboidrati: 8.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "PESCE SPADA", proteine: 16, grassi: 6, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "PESCHE (una media = 150g)", proteine: 0.8, grassi: 0.1, carboidrati: 6.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "PHILADELPHIA", proteine: 5.3, grassi: 27.5, carboidrati: 2.5, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "PHILADELPHIA light", proteine: 7.6, grassi: 16, carboidrati: 3.5, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "PICCIONE GIOVANE", proteine: 22.1, grassi: 5.5, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "PINOLI (uno = 0,4g)", proteine: 31.9, grassi: 50.3, carboidrati: 4, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "PIPETTE Rigate Barilla n. 86", proteine: 11.5, grassi: 1.5, carboidrati: 72.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PISELLI", proteine: 7, grassi: 0, carboidrati: 12.4, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PISELLI VALFRUTTA", proteine: 3.6, grassi: 0.3, carboidrati: 12.5, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "PISTACCHI (uno = 0.5g)", proteine: 18.1, grassi: 56.1, carboidrati: 8.2, categoria: "Grassi", qualita: "Favorevole" },
+  { nome: "PIZZA CON POMODORO", proteine: 4, grassi: 4, carboidrati: 51.9, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PIZZA POMODORO E MOZZARELLA", proteine: 5.6, grassi: 5.6, carboidrati: 52.9, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "Polenta Taragna Moretti", proteine: 7.5, grassi: 1.8, carboidrati: 74, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "POLLO (COSCIA)", proteine: 17.9, grassi: 6.5, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "POLLO (PETTO - una fettina = 90-120g)", proteine: 22.2, grassi: 0.9, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "POLLO ARROSTO", proteine: 19.9, grassi: 22, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "POLPO", proteine: 10.6, grassi: 1, carboidrati: 1.4, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "POLVERE DI UOVO", proteine: 47, grassi: 41.2, carboidrati: 4.1, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "POMODORI DA INSALATA (uno medio = 150g)", proteine: 1.2, grassi: 0.2, carboidrati: 2.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "POMODORI MATURI (uno medio = 200g)", proteine: 1, grassi: 0.2, carboidrati: 3.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "POMODORI PELATI IN SCATOLA", proteine: 1.2, grassi: 0.5, carboidrati: 3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "POMODORI Pomino", proteine: 0.9, grassi: 0.2, carboidrati: 3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "POMPELMO", proteine: 0.6, grassi: 0, carboidrati: 6.2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "POPCORN", proteine: 12.7, grassi: 5, carboidrati: 76.7, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "PORRI", proteine: 2.1, grassi: 0.1, carboidrati: 5.2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "PREZZEMOLO", proteine: 3.7, grassi: 0.6, carboidrati: 0, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "PROSCIUTTO COTTO (una fetta = 10-15g)", proteine: 19.8, grassi: 14.7, carboidrati: 0.9, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "PROSCIUTTO COTTO MAGRO (una fetta = 10-15g)", proteine: 19, grassi: 7, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "PROSCIUTTO CRUDO (una fetta = 10-15g)", proteine: 25.5, grassi: 18.4, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "PROSCIUTTO CRUDO MAGRO (una fetta = 10-15g)", proteine: 20, grassi: 8.7, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "PROTEINE IN POLVERE", proteine: 90, grassi: 0, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "PROVOLONE", proteine: 26.3, grassi: 29, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "PRUGNE (una media = 40g)", proteine: 0.5, grassi: 0.1, carboidrati: 10.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "QUAGLIA", proteine: 25, grassi: 6.8, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "RADICCHIO ROSSO", proteine: 1.4, grassi: 0.1, carboidrati: 1.6, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "RADICCHIO VERDE", proteine: 1.9, grassi: 0.5, carboidrati: 0.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "RAGU", proteine: 6, grassi: 6, carboidrati: 8, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "RANE", proteine: 15.5, grassi: 0.2, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "RAPE", proteine: 1, grassi: 0, carboidrati: 3.8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "RAVANELLI", proteine: 0.8, grassi: 0.1, carboidrati: 1.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "RAZZA", proteine: 14.2, grassi: 0.9, carboidrati: 0.7, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "RIBES", proteine: 0.9, grassi: 0, carboidrati: 6.6, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "RICOTTA DI PECORA", proteine: 9.5, grassi: 15, carboidrati: 4, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "RICOTTA LAND", proteine: 10.5, grassi: 8, carboidrati: 2.8, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "RICOTTA MAGRA WEIGHT WATCHER (250g)", proteine: 9, grassi: 9, carboidrati: 4, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "RICOTTA PETTINICCHIO", proteine: 12, grassi: 10.4, carboidrati: 0.6, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "RICOTTA S.LUCIA GALBANI", proteine: 8, grassi: 11, carboidrati: 3.8, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "RISO", proteine: 7, grassi: 0.6, carboidrati: 87.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "RISO ALLA PESCATORA", proteine: 6.1, grassi: 2.6, carboidrati: 14, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "RISO BIO Arborio Integrale", proteine: 8.5, grassi: 3.3, carboidrati: 70, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "RISO BIO Superfino Thaibonnet Parboiled", proteine: 7.5, grassi: 1, carboidrati: 81.9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "RISO Gallo Carnaroli", proteine: 7, grassi: 1, carboidrati: 78, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "RISO VIALONE NANO FERRON", proteine: 8, grassi: 0.7, carboidrati: 77, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "ROASTED Seaweed Sushi Nori", proteine: 40.9, grassi: 0, carboidrati: 41.7, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "ROMBO", proteine: 16.3, grassi: 1.3, carboidrati: 1.2, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "SALAME (TIPO MILANO - una fetta = 5-8g)", proteine: 36.9, grassi: 34.9, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "SALAME NOSTRANO (una fetta = 5-8g)", proteine: 27.3, grassi: 28.5, carboidrati: 1.1, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "SALAME UNGHERESE (una fetta = 5-8g)", proteine: 25, grassi: 30, carboidrati: 10, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "SALMONE AFFUMICATO", proteine: 18.28, grassi: 4.32, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "SALMONE IN SALAMOIA", proteine: 21.1, grassi: 12, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "SALSA DI SOYA (Tamari)", proteine: 10.51, grassi: 0.1, carboidrati: 5.57, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "SALSA ROSA", proteine: 10, grassi: 67, carboidrati: 10, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "SALSICCIA DI SUINO FRESCA", proteine: 14.3, grassi: 30.8, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "SALSICCIA DI SUINO SECCA", proteine: 22, grassi: 47.3, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "SARAGO", proteine: 20.8, grassi: 4.5, carboidrati: 1.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "SARDA - SARDINE FRESCHE", proteine: 20.8, grassi: 4.5, carboidrati: 1.5, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "SAVOIARDI", proteine: 11.9, grassi: 9.2, carboidrati: 69.8, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "SCALOPPINE", proteine: 11.8, grassi: 3.7, carboidrati: 2, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "SCAMORZA", proteine: 22.7, grassi: 10, carboidrati: 7.2, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "SCAROLA", proteine: 0.9, grassi: 0.3, carboidrati: 2, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "SEDANO", proteine: 2.3, grassi: 0.2, carboidrati: 2.4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "SEDANO RAPA", proteine: 1.9, grassi: 0.1, carboidrati: 3.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "SEITAN (precucinato)", proteine: 19.6, grassi: 2.1, carboidrati: 16.8, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "SEMOLA", proteine: 11.5, grassi: 0.5, carboidrati: 77.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "SEPPIA", proteine: 14, grassi: 1.5, carboidrati: 0.7, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "SGOMBRO O MACCARELLO", proteine: 17, grassi: 11, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "SGOMBRO SOTT'OLIO", proteine: 17, grassi: 15, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "SOGLIOLA", proteine: 16.9, grassi: 1.7, carboidrati: 0.8, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "SOIA", proteine: 36.9, grassi: 18, carboidrati: 23.3, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "SOIA LESSATA DE RICA", proteine: 13.9, grassi: 8, carboidrati: 8.2, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "SOTTILETTE KRAFT LIGHT", proteine: 19, grassi: 13, carboidrati: 4.3, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "SOTTILETTE Tigre (una fetta = 18.7g)", proteine: 20, grassi: 24, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "SPAGHETTI Integrali n. 141 Delverde", proteine: 11.5, grassi: 1.5, carboidrati: 73.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "SPAGHETTINI 11 De Cecco", proteine: 13, grassi: 1.5, carboidrati: 73, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "SPALLA COTTA SGRASSATA", proteine: 12.5, grassi: 3.5, carboidrati: 5.5, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "SPECK (una fetta = 7-8g)", proteine: 28.3, grassi: 20.9, carboidrati: 0.5, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "SPIGOLA", proteine: 16.5, grassi: 1.5, carboidrati: 0.6, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "SPINACI", proteine: 3.4, grassi: 0.7, carboidrati: 3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "STOCCAFISSO AMMOLLATO", proteine: 20.7, grassi: 0.9, carboidrati: 0.3, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "STOCCAFISSO SECCO", proteine: 80.1, grassi: 3.5, carboidrati: 1.1, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "STRACCHINO", proteine: 18.5, grassi: 25, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "TACCHINO COSCIA", proteine: 20.9, grassi: 11, carboidrati: 0.4, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "TACCHINO PETTO (una fettina = 90-120g)", proteine: 22, grassi: 4.9, carboidrati: 0.4, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TE' (foglie)", proteine: 19.6, grassi: 2, carboidrati: 3, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "TINCA", proteine: 17.9, grassi: 0.5, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TOFU duro", proteine: 13.17, grassi: 6.73, carboidrati: 1.3, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TOFU morbido", proteine: 8.3, grassi: 4.6, carboidrati: 3.8, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TONNO", proteine: 21.5, grassi: 8, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TONNO AL NATURALE (sgocciolato)", proteine: 25.1, grassi: 0.3, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TONNO RIO MARE all'olio di oliva", proteine: 18.5, grassi: 37.9, carboidrati: 0, categoria: "Grassi", qualita: "Moderazione" },
+  { nome: "TONNO Rio Mare naturale cotto a vapore", proteine: 27.5, grassi: 1.5, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TONNO SOTT'OLIO (sgocciolato)", proteine: 22.8, grassi: 19, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "TORRONE ALLA MANDORLA", proteine: 10.8, grassi: 27, carboidrati: 52, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "TORTA MARGHERITA", proteine: 8.9, grassi: 10, carboidrati: 63.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "TORTELLINI FRESCHI", proteine: 12.2, grassi: 7.1, carboidrati: 52.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "TORTELLINI SECCHI", proteine: 15.7, grassi: 10.8, carboidrati: 61, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "TORTILLAS Uncle Bean (una tortilla = 45g)", proteine: 7.5, grassi: 8, carboidrati: 48, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "TRIGLIA", proteine: 15.8, grassi: 6.2, carboidrati: 1.1, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TRIPPA DI BOVINO", proteine: 15.8, grassi: 5, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "TRIVOGLIO BONDUELLE (270g)", proteine: 3.4, grassi: 0.6, carboidrati: 9.7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "TROTA", proteine: 14.7, grassi: 3, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "TROTE SURGELATE EVISCERATE AIA", proteine: 19, grassi: 3, carboidrati: 0, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "UOVA DI ANATRA", proteine: 12.2, grassi: 15.4, carboidrati: 0.7, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "UOVA DI GALLINA (albume)", proteine: 10.9, grassi: 0.1, carboidrati: 0.8, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "UOVA DI GALLINA (tuorlo)", proteine: 16.3, grassi: 31.9, carboidrati: 0.7, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "UOVA DI GALLINA (uno intero = 60g)", proteine: 13, grassi: 11.1, carboidrati: 1, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "UOVO DI OCA", proteine: 13.8, grassi: 14.4, carboidrati: 1, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "UOVO DI TACCHINO", proteine: 12.8, grassi: 10.2, carboidrati: 1, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "UVA", proteine: 0.5, grassi: 0.1, carboidrati: 15.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "VERZA", proteine: 2.3, grassi: 0.2, carboidrati: 2.4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "VINO BIANCO (un bicchiere = 130g)", proteine: 0.1, grassi: 0, carboidrati: 7, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "VINO da dessert dolce (un bicchiere = 130g)", proteine: 0.2, grassi: 0, carboidrati: 14, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "VINO da dessert secco (un bicchiere = 130g)", proteine: 0.2, grassi: 0, carboidrati: 9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "VINO da tavola (un bicchiere = 130g)", proteine: 0.2, grassi: 0, carboidrati: 8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "VINO ROSE' (un bicchiere = 130g)", proteine: 0.2, grassi: 0, carboidrati: 8, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "VINO ROSSO (un bicchiere = 130g)", proteine: 0.2, grassi: 0, carboidrati: 9, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "VITELLO (macellazione = 120g)", proteine: 20.7, grassi: 1, carboidrati: 0.1, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "VITELLONE (carne grassa)", proteine: 18.1, grassi: 15, carboidrati: 0, categoria: "Proteine", qualita: "Da evitare" },
+  { nome: "VITELLONE (carne magra)", proteine: 21.3, grassi: 3.1, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "VITELLONE (carne semigrassa)", proteine: 19.1, grassi: 9.3, carboidrati: 0, categoria: "Proteine", qualita: "Moderazione" },
+  { nome: "VONGOLA", proteine: 10.2, grassi: 2.5, carboidrati: 2.2, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "WAFER", proteine: 5.4, grassi: 29, carboidrati: 61.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "WASA", proteine: 10, grassi: 1.4, carboidrati: 64, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "WEETABIX", proteine: 11.2, grassi: 2.7, carboidrati: 67.6, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "WURSTEL", proteine: 14, grassi: 20, carboidrati: 11.4, categoria: "Misto", qualita: "Da evitare" },
+  { nome: "YOGURT (aromatizzato con frutta)", proteine: 2.8, grassi: 3.3, carboidrati: 12.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "YOGURT (intero)", proteine: 3.5, grassi: 3.9, carboidrati: 3.6, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "YOGURT (parzialmente scremato)", proteine: 3.4, grassi: 1.7, carboidrati: 3.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT (scremato)", proteine: 3.3, grassi: 0.9, carboidrati: 4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT Activia", proteine: 4.2, grassi: 3.5, carboidrati: 5.1, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "YOGURT Activia Magro", proteine: 5, grassi: 0.1, carboidrati: 6.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT DANONE VITASNELLA", proteine: 4.1, grassi: 0.1, carboidrati: 7.5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT DANONE Vitasnella Bianco Naturale", proteine: 4.8, grassi: 0.1, carboidrati: 5.8, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT INTERO SELEX", proteine: 4.8, grassi: 3.5, carboidrati: 4, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "YOGURT INTERO VITESSA ALBICOCCA", proteine: 3.3, grassi: 3.1, carboidrati: 15, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "YOGURT LC1 Nestle' BIANCO", proteine: 5.4, grassi: 1.5, carboidrati: 5.3, categoria: "Misto", qualita: "Favorevole" },
+  { nome: "YOGURT MAGRO ALLA FRUTTA", proteine: 3.4, grassi: 0.1, carboidrati: 6.9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT MAGRO LAND", proteine: 4.3, grassi: 0.1, carboidrati: 5, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT MEVGAL", proteine: 3.9, grassi: 2, carboidrati: 5.3, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT MULLER DELIGHT", proteine: 4.7, grassi: 0.1, carboidrati: 6.1, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT MULLER DELIGHT ANANAS", proteine: 4.6, grassi: 0.1, carboidrati: 6.6, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT NATURALE LAND", proteine: 3.6, grassi: 3.7, carboidrati: 4.7, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "YOGURT scaldasole intero", proteine: 3.7, grassi: 4.5, carboidrati: 4.7, categoria: "Misto", qualita: "Moderazione" },
+  { nome: "YOGURT scaldasole magro", proteine: 4.6, grassi: 0.9, carboidrati: 5.4, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT TOTAL 0 grassi", proteine: 10, grassi: 0, carboidrati: 4, categoria: "Proteine", qualita: "Favorevole" },
+  { nome: "YOGURT VITASNELLA PESCA (125g)", proteine: 4.3, grassi: 0.1, carboidrati: 6.9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "YOGURT Yomo Esprit Fragola", proteine: 3.8, grassi: 0.1, carboidrati: 5.9, categoria: "Carboidrati", qualita: "Favorevole" },
+  { nome: "ZAMPONE", proteine: 19.1, grassi: 31.6, carboidrati: 0, categoria: "Grassi", qualita: "Da evitare" },
+  { nome: "ZUCCA GIALLA", proteine: 1.1, grassi: 0.1, carboidrati: 3.5, categoria: "Carboidrati", qualita: "Moderazione" },
+  { nome: "ZUCCHERO (un cucchiaino = 5g)", proteine: 0, grassi: 0, carboidrati: 100, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "ZUCCHERO DI CANNA (un cucchiaino = 5g)", proteine: 0, grassi: 0, carboidrati: 97.3, categoria: "Carboidrati", qualita: "Da evitare" },
+  { nome: "ZUCCHINE (una media = 100g)", proteine: 1.16, grassi: 0.14, carboidrati: 2.9, categoria: "Carboidrati", qualita: "Favorevole" },
+];
+window.databaseCompleto = databaseCompleto;
+</script>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   COSTANTI E FUNZIONI DI SUPPORTO
+   ===================================================================== */
+
+const CHIAVE_PASTI = "pastiZona";
+const CHIAVE_PERSONALIZZATI = "alimentiPersonalizzati";
+const CHIAVE_OBIETTIVO = "obiettivoZona";
+const CHIAVE_PREF_ALIMENTI = "alimentiPreferiti";
+const CHIAVE_PREF_PASTI = "pastiPreferiti";
+const TIPI_PASTO = ["Colazione", "Pranzo", "Cena", "Spuntino"];
+
+const QUALITA_VALIDE = ["Favorevole", "Moderazione", "Da evitare"];
+const collatore = new Intl.Collator("it", { sensitivity: "base", numeric: true });
+
+/* Protegge ogni testo inserito dall'utente prima di metterlo in innerHTML */
+function esc(testo){
+    return String(testo ?? "").replace(/[&<>"']/g, function(c){
+        return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+}
+
+function el(id){
+    return document.getElementById(id);
+}
+
+/* localStorage sicuro: un dato corrotto non blocca più l'applicazione */
+function leggiLS(chiave, predefinito){
+    try{
+        const grezzo = localStorage.getItem(chiave);
+        if(grezzo === null) return predefinito;
+        const valore = JSON.parse(grezzo);
+        return (valore === null || valore === undefined) ? predefinito : valore;
+    }catch(e){
+        return predefinito;
+    }
+}
+
+function scriviLS(chiave, valore){
+    try{
+        localStorage.setItem(chiave, JSON.stringify(valore));
+        return true;
+    }catch(e){
+        alert("Impossibile salvare i dati su questo dispositivo (memoria piena o bloccata dal browser).");
+        return false;
+    }
+}
+
+/* Tutte le parole scritte devono comparire nel nome (es. "yogurt mag" trova "YOGURT MAGRO LAND") */
+function corrisponde(nome, testo){
+    const parole = String(testo ?? "").toLowerCase().split(/\s+/).filter(Boolean);
+    const n = String(nome).toLowerCase();
+    return parole.every(function(p){ return n.includes(p); });
+}
+
+function chiaveNome(nome){
+    return String(nome ?? "").trim().toUpperCase();
+}
+
+function numeroSicuro(valore, massimo){
+    const n = parseFloat(valore);
+    return (Number.isFinite(n) && n >= 0 && n <= (massimo || 1000)) ? n : 0;
+}
+
+function normalizzaQualita(q){
+    if(q === "Sfavorevole") return "Da evitare";   /* compatibilità con i vecchi salvataggi */
+    return QUALITA_VALIDE.includes(q) ? q : "Moderazione";
+}
+
+function badgeQualita(q){
+    if(q === "Favorevole") return "✅ Favorevole";
+    if(q === "Moderazione") return "⚠️ Moderazione";
+    return "❌ Da evitare";
+}
+
+function iconaQualita(q){
+    if(q === "Favorevole") return "✅";
+    if(q === "Moderazione") return "⚠️";
+    return "❌";
+}
+
+/* Categoria "pura" in base al macronutriente dominante.
+   Gli alimenti con più macronutrienti importanti finiscono in "Misto". */
+function calcolaCategoria(p, c, g){
+    const t = p + c + g;
+    if(t <= 0) return "Misto";
+    if(t < 12) return "Carboidrati";            /* verdure, frutta, erbe: poveri di tutto */
+    const ps = p / t, cs = c / t, gs = g / t;
+    if(cs >= 0.6) return "Carboidrati";
+    if(gs >= 0.55) return "Grassi";
+    if(ps >= 0.35 && cs <= 0.25) return "Proteine";
+    return "Misto";
+}
+
+/* =====================================================================
+   DATABASE ALIMENTI (base + personalizzati)
+   ===================================================================== */
+
+let alimentiBase = [];
+let alimenti = [];
+let alimentoInModifica = null;
+
+function creaAlimentoDaDatabase(a){
+    const p = numeroSicuro(a.proteine);
+    const c = numeroSicuro(a.carboidrati);
+    const g = numeroSicuro(a.grassi);
+
+    return {
+        nome: String(a.nome),
+        proteine: p,
+        carbo: c,
+        grassi: g,
+        categoria: a.categoria || calcolaCategoria(p, c, g),
+        qualita: normalizzaQualita(a.qualita),
+        fonte: "DATABASE"
+    };
+}
+
+/* Controlla e pulisce un alimento personalizzato (da localStorage o da un backup) */
+function sanificaAlimento(a){
+    if(!a || typeof a !== "object") return null;
+    const nome = String(a.nome ?? "").trim().slice(0, 120);
+    if(!nome) return null;
+
+    const p = numeroSicuro(a.proteine);
+    const c = numeroSicuro(a.carbo !== undefined ? a.carbo : a.carboidrati);
+    const g = numeroSicuro(a.grassi);
+
+    return {
+        nome: nome,
+        proteine: p,
+        carbo: c,
+        grassi: g,
+        categoria: calcolaCategoria(p, c, g),
+        qualita: normalizzaQualita(a.qualita),
+        fonte: "PERSONALIZZATO"
+    };
+}
+
+/* Elenco SEMPRE ordinato alla stessa maniera: gli indici dei pulsanti
+   Modifica/Elimina corrispondono quindi all'alimento mostrato. */
+function leggiPersonalizzati(){
+    const grezzi = leggiLS(CHIAVE_PERSONALIZZATI, []);
+    if(!Array.isArray(grezzi)) return [];
+    const lista = [];
+    grezzi.forEach(function(a){
+        const pulito = sanificaAlimento(a);
+        if(pulito) lista.push(pulito);
+    });
+    lista.sort(function(x, y){ return collatore.compare(x.nome, y.nome); });
+    return lista;
+}
+
+function salvaPersonalizzati(lista){
+    const daSalvare = lista.map(function(a){
+        return {
+            nome: a.nome,
+            proteine: a.proteine,
+            carbo: a.carbo,
+            grassi: a.grassi,
+            categoria: a.categoria,
+            qualita: a.qualita
+        };
+    });
+    return scriviLS(CHIAVE_PERSONALIZZATI, daSalvare);
+}
+
+/* Ricostruisce l'elenco completo: i personalizzati con lo stesso nome
+   sostituiscono quelli del database (anche dopo il riavvio). */
+function ricostruisciAlimenti(){
+    const mappa = new Map();
+    alimentiBase.forEach(function(a){ mappa.set(chiaveNome(a.nome), a); });
+    leggiPersonalizzati().forEach(function(a){ mappa.set(chiaveNome(a.nome), a); });
+    alimenti = Array.from(mappa.values());
+    alimenti.sort(function(x, y){ return collatore.compare(x.nome, y.nome); });
+}
+
+function trovaAlimento(nome){
+    const k = chiaveNome(nome);
+    return alimenti.find(function(a){ return chiaveNome(a.nome) === k; }) || null;
+}
+
+/* =====================================================================
+   PREFERITI: ALIMENTI E PASTI
+   ===================================================================== */
+
+function sanificaNomi(lista){
+    const out = [];
+    const visti = new Set();
+    lista.forEach(function(n){
+        if(typeof n !== "string") return;
+        const t = n.trim().slice(0, 120);
+        if(!t) return;
+        const k = chiaveNome(t);
+        if(visti.has(k)) return;
+        visti.add(k);
+        out.push(t);
+    });
+    return out;
+}
+
+function leggiNomiPreferiti(){
+    const grezzi = leggiLS(CHIAVE_PREF_ALIMENTI, []);
+    return Array.isArray(grezzi) ? sanificaNomi(grezzi) : [];
+}
+
+function preferitiSet(){
+    return new Set(leggiNomiPreferiti().map(chiaveNome));
+}
+
+function isPreferito(nome){
+    return preferitiSet().has(chiaveNome(nome));
+}
+
+function etichettaAlimento(a, pref){
+    return iconaQualita(a.qualita) + " " + a.nome + (pref && pref.has(chiaveNome(a.nome)) ? " ⭐" : "");
+}
+
+function togglePreferitoSelezionato(){
+    const a = trovaAlimento(el("alimento").value);
+    if(!a){
+        alert("Seleziona prima un alimento");
+        return;
+    }
+
+    const nomi = leggiNomiPreferiti();
+    const k = chiaveNome(a.nome);
+    const indice = nomi.findIndex(function(n){ return chiaveNome(n) === k; });
+
+    if(indice >= 0) nomi.splice(indice, 1);
+    else nomi.push(a.nome);
+
+    if(!scriviLS(CHIAVE_PREF_ALIMENTI, nomi)) return;
+
+    aggiornaStatoBottoneModifica();
+    filtraAlimentiCompleto();
+    inizializzaCostruttoreZona();
+}
+
+function sanificaPastoPreferito(p){
+    if(!p || typeof p !== "object" || !Array.isArray(p.voci)) return null;
+    const nome = String(p.nome ?? "").trim().slice(0, 60);
+    if(!nome) return null;
+    const tipo = TIPI_PASTO.includes(p.tipo) ? p.tipo : "Pranzo";
+
+    const voci = [];
+    p.voci.forEach(function(v){
+        if(!v || typeof v.nome !== "string") return;
+        const peso = parseFloat(v.peso);
+        if(!Number.isFinite(peso) || peso <= 0 || peso > 5000) return;
+        voci.push({ nome: v.nome.trim().slice(0, 120), peso: peso, bloccato: !!v.bloccato });
+    });
+
+    return voci.length ? { nome: nome, tipo: tipo, voci: voci } : null;
+}
+
+function leggiPastiPreferiti(){
+    const grezzi = leggiLS(CHIAVE_PREF_PASTI, []);
+    if(!Array.isArray(grezzi)) return [];
+    const lista = [];
+    grezzi.forEach(function(p){
+        const pulito = sanificaPastoPreferito(p);
+        if(pulito) lista.push(pulito);
+    });
+    lista.sort(function(x, y){ return collatore.compare(x.nome, y.nome); });
+    return lista;
+}
+
+function salvaPastoPreferito(){
+    if(alimentiPasto.length === 0){
+        alert("Aggiungi almeno un alimento al pasto");
+        return;
+    }
+
+    const tipo = el("tipoPasto").value;
+    const lista = leggiPastiPreferiti();
+
+    let nome = prompt("Nome del pasto preferito:", tipo + " " + (lista.length + 1));
+    if(nome === null) return;
+    nome = nome.trim().slice(0, 60);
+    if(!nome){
+        alert("Inserisci un nome");
+        return;
+    }
+
+    const esistente = lista.findIndex(function(p){ return chiaveNome(p.nome) === chiaveNome(nome); });
+    if(esistente >= 0){
+        if(!confirm("Esiste già un pasto preferito chiamato \"" + nome + "\". Vuoi sostituirlo?")) return;
+        lista.splice(esistente, 1);
+    }
+
+    lista.push({
+        nome: nome,
+        tipo: tipo,
+        voci: alimentiPasto.map(function(a){ return { nome: a.nome, peso: a.peso, bloccato: !!a.bloccato }; })
+    });
+    lista.sort(function(x, y){ return collatore.compare(x.nome, y.nome); });
+
+    if(!scriviLS(CHIAVE_PREF_PASTI, lista)) return;
+
+    caricaPastiPreferiti();
+    alert("⭐ Pasto salvato nei preferiti");
+}
+
+function caricaPastiPreferiti(){
+    const lista = leggiPastiPreferiti();
+    let html = "";
+
+    lista.forEach(function(p, indice){
+        let blocchi = { p: 0, c: 0, g: 0 };
+        const righe = [];
+
+        p.voci.forEach(function(v){
+            const db = trovaAlimento(v.nome);
+            if(db){
+                blocchi.p += ((db.proteine * v.peso) / 100) / 7;
+                blocchi.c += ((db.carbo * v.peso) / 100) / 9;
+                blocchi.g += ((db.grassi * v.peso) / 100) / 3;
+                righe.push(esc(nomeBreve(db.nome)) + " (" + v.peso + " g)");
+            }else{
+                righe.push("<s>" + esc(nomeBreve(v.nome)) + "</s> (non più nel database)");
+            }
+        });
+
+        html += `
+<div class="pasto">
+<b>⭐ ${esc(p.nome)}</b> <small>(${esc(p.tipo)})</small><br>
+${righe.join("<br>")}<br><br>
+P: ${blocchi.p.toFixed(2)} | C: ${blocchi.c.toFixed(2)} | G: ${blocchi.g.toFixed(2)}
+<br><br>
+<button class="calcola" onclick="usaPastoPreferito(${indice})">📥 Carica nel pasto</button>
+<button class="elimina" onclick="eliminaPastoPreferito(${indice})">🗑️ Elimina</button>
+</div>
+`;
+    });
+
+    el("elencoPastiPreferiti").innerHTML = html || "Nessun pasto preferito";
+}
+
+function usaPastoPreferito(indice){
+    const p = leggiPastiPreferiti()[indice];
+    if(!p) return;
+
+    if(alimentiPasto.length > 0 && !confirm("Sostituire il pasto corrente con \"" + p.nome + "\"?")) return;
+
+    const nuovi = [];
+    const mancanti = [];
+
+    p.voci.forEach(function(v){
+        const db = trovaAlimento(v.nome);
+        if(!db){
+            mancanti.push(v.nome);
+            return;
+        }
+        const voce = { nome: db.nome, peso: v.peso, bloccato: !!v.bloccato };
+        ricalcolaVoce(voce, db);
+        nuovi.push(voce);
+    });
+
+    if(nuovi.length === 0){
+        alert("Nessun alimento di questo pasto è più presente nel database.");
+        return;
+    }
+
+    alimentiPasto = nuovi;
+    el("tipoPasto").value = p.tipo;
+    ricalcolaTotalePasto();
+
+    if(mancanti.length > 0){
+        alert("Alcuni alimenti non sono più nel database e sono stati saltati:\n" + mancanti.join("\n"));
+    }
+
+    const destinazione = el("pastoCorrente");
+    if(destinazione.scrollIntoView) destinazione.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function eliminaPastoPreferito(indice){
+    const lista = leggiPastiPreferiti();
+    if(!lista[indice]) return;
+    if(!confirm("Eliminare il pasto preferito \"" + lista[indice].nome + "\"?")) return;
+
+    lista.splice(indice, 1);
+    if(!scriviLS(CHIAVE_PREF_PASTI, lista)) return;
+    caricaPastiPreferiti();
+}
+
+/* =====================================================================
+   CALCOLO RAPIDO
+   ===================================================================== */
+
+function numeroRapido(id){
+    const n = parseFloat(String(el(id).value).replace(",", "."));
+    return (Number.isFinite(n) && n >= 0) ? n : 0;
+}
+
+function calcolaRapido(){
+    const p = numeroRapido("rapidoP");
+    const c = numeroRapido("rapidoC");
+    const g = numeroRapido("rapidoG");
+    const q = numeroRapido("rapidoQ");
+
+    const gp = p * q / 100, gc = c * q / 100, gg = g * q / 100;
+    const nome = el("rapidoNome").value.trim();
+    const avviso = (p + c + g) > 100.5
+        ? "<br><br><small>⚠️ La somma dei macronutrienti supera 100 g ogni 100 g di alimento: controlla i valori.</small>" : "";
+
+    el("risultatoRapido").innerHTML =
+        "<div class='evidenza'>" + (nome ? esc(nome) + " · " : "") + q + " g<br><br>" +
+        "P: " + (gp / 7).toFixed(2) + " | C: " + (gc / 9).toFixed(2) + " | G: " + (gg / 3).toFixed(2) + "</div>" +
+        "<br>Nella quantità inserita: " + gp.toFixed(1) + " g di proteine, " + gc.toFixed(1) +
+        " g di carboidrati, " + gg.toFixed(1) + " g di grassi" +
+        "<br>Per 100 g: P " + (p / 7).toFixed(2) + " | C " + (c / 9).toFixed(2) + " | G " + (g / 3).toFixed(2) + " blocchi" +
+        avviso;
+}
+
+/* Svuota il calcolo rapido per inserire un nuovo alimento */
+function azzeraRapido(){
+    el("rapidoNome").value = "";
+    el("rapidoP").value = "";
+    el("rapidoC").value = "";
+    el("rapidoG").value = "";
+    el("rapidoQ").value = "100";
+    calcolaRapido();
+    el("rapidoNome").focus();
+}
+
+/* Porta i dati del calcolo rapido nel modulo "Nuovo alimento" */
+function salvaRapidoComeAlimento(){
+    const nome = el("rapidoNome").value.trim();
+    const p = el("rapidoP").value, c = el("rapidoC").value, g = el("rapidoG").value;
+
+    apriNuovoAlimento();
+
+    el("alimentoManuale").value = nome;
+    el("proteine").value = String(p).replace(",", ".");
+    el("carbo").value = String(c).replace(",", ".");
+    el("grassi").value = String(g).replace(",", ".");
+    calcola();
+
+    if(!nome) el("alimentoManuale").focus();
+}
+
+function toggleCalcoloRapido(){ toggleSezione("contenitoreRapido", "iconaRapido"); }
+function togglePastiPreferiti(){ toggleSezione("contenitorePreferiti", "iconaPreferiti"); }
+
+/* =====================================================================
+   SELEZIONE ALIMENTO E CALCOLO BLOCCHI
+   ===================================================================== */
+
+let alimentiPasto = [];
+let totalePasto = { proteine: 0, carbo: 0, grassi: 0 };
+let totaliGiornalieri = { proteine: 0, carbo: 0, grassi: 0 };
+let ripristinoBlocco = null;
+
+function aggiornaStatoBottoneModifica(){
+    const a = trovaAlimento(el("alimento").value);
+    el("btnModifica").disabled = !a;
+    el("btnPreferito").disabled = !a;
+    el("btnPreferito").innerText = (a && isPreferito(a.nome)) ? "★ Rimuovi dai preferiti" : "⭐ Aggiungi ai preferiti";
+}
+
+function mostraAlimento(a){
+    el("alimento").value = a.nome;
+    el("proteine").value = a.proteine;
+    el("carbo").value = a.carbo;
+    el("grassi").value = a.grassi;
+
+    el("infoAlimento").innerHTML =
+        "<b>" + esc(a.nome) + "</b><br><br>" +
+        "Categoria: " + esc(a.categoria === "Misto" ? "Misto (più macronutrienti)" : a.categoria) + "<br>" +
+        "Valutazione Zona: " + badgeQualita(a.qualita) + "<br><br>" +
+        "Proteine: " + a.proteine + " g<br>" +
+        "Carboidrati: " + a.carbo + " g<br>" +
+        "Grassi: " + a.grassi + " g<br><br>" +
+        "Blocchi P (100g): " + (a.proteine / 7).toFixed(2) + "<br>" +
+        "Blocchi C (100g): " + (a.carbo / 9).toFixed(2) + "<br>" +
+        "Blocchi G (100g): " + (a.grassi / 3).toFixed(2);
+
+    aggiornaSemaforoAlimento(a);
+    aggiornaStatoBottoneModifica();
+    calcola();
+}
+
+function selezionaAlimento(){
+    const a = trovaAlimento(el("alimentoSelezionato").value);
+    if(!a) return;
+    mostraAlimento(a);
+}
+
+function calcola(){
+    const p = parseFloat(el("proteine").value) || 0;
+    const c = parseFloat(el("carbo").value) || 0;
+    const g = parseFloat(el("grassi").value) || 0;
+    const peso = parseFloat(el("peso").value) || 0;
+
+    el("bp").innerText = (((p * peso) / 100) / 7).toFixed(2);
+    el("bc").innerText = (((c * peso) / 100) / 9).toFixed(2);
+    el("bg").innerText = (((g * peso) / 100) / 3).toFixed(2);
+}
+
+/* =====================================================================
+   SEMAFORO: ALIMENTO SINGOLO E PASTO
+   ===================================================================== */
+
+/* Semaforo dell'alimento: verde = favorevole, arancione = moderazione, rosso = da evitare */
+function aggiornaSemaforoAlimento(a){
+    const contenitore = el("semaforoIG");
+    if(!a){
+        contenitore.innerHTML = "<div class='semaforo ig-grigio'>⚪ Nessun alimento selezionato</div>";
+        return;
+    }
+
+    let classe, titolo, nota;
+    if(a.qualita === "Favorevole"){
+        classe = "ig-verde";
+        titolo = "🟢 Favorevole";
+        nota = "Da preferire nella Dieta a Zona";
+    }else if(a.qualita === "Moderazione"){
+        classe = "ig-giallo";
+        titolo = "🟡 Moderazione";
+        nota = "Consumare con moderazione";
+    }else{
+        classe = "ig-rosso";
+        titolo = "🔴 Da evitare";
+        nota = "Sconsigliato nella Dieta a Zona";
+    }
+
+    contenitore.innerHTML = "<div class='semaforo " + classe + "'>" + titolo + "<small>" + nota + "</small></div>";
+}
+
+/* Semaforo del pasto: in base alla quota di blocchi che arriva da alimenti favorevoli o da evitare */
+function aggiornaSemaforoPasto(){
+    const semaforo = el("semaforoPasto");
+
+    if(alimentiPasto.length === 0){
+        semaforo.className = "semaforo ig-grigio";
+        semaforo.innerHTML = "⚪ Nessun alimento";
+        return;
+    }
+
+    let blocchiTotali = 0, blocchiFavorevoli = 0, blocchiDaEvitare = 0;
+    const daEvitare = [];
+
+    alimentiPasto.forEach(function(a){
+        const b = a.proteine + a.carbo + a.grassi;
+        blocchiTotali += b;
+        if(a.qualita === "Favorevole") blocchiFavorevoli += b;
+        if(a.qualita === "Da evitare"){
+            blocchiDaEvitare += b;
+            daEvitare.push(a.nome);
+        }
+    });
+
+    const quotaFavorevoli = blocchiTotali > 0 ? blocchiFavorevoli / blocchiTotali : 0;
+    const quotaDaEvitare = blocchiTotali > 0 ? blocchiDaEvitare / blocchiTotali : 0;
+
+    const motivi = [];
+    if(daEvitare.length > 0) motivi.push("Contiene alimenti da evitare: " + daEvitare.map(esc).join(", "));
+    if(quotaFavorevoli < 0.6) motivi.push("Meno del 60% dei blocchi proviene da alimenti favorevoli");
+
+    if(quotaDaEvitare >= 0.25){
+        semaforo.className = "semaforo ig-rosso";
+        semaforo.innerHTML = "🔴 Pasto non favorevole<small>" + motivi.join("<br>") + "</small>";
+    }else if(daEvitare.length === 0 && quotaFavorevoli >= 0.6){
+        semaforo.className = "semaforo ig-verde";
+        semaforo.innerHTML = "🟢 Pasto favorevole<small>Favorevole per la Dieta a Zona</small>";
+    }else{
+        semaforo.className = "semaforo ig-giallo";
+        semaforo.innerHTML = "🟡 Pasto da moderare<small>" + motivi.join("<br>") + "</small>";
+    }
+}
+
+/* =====================================================================
+   PASTO CORRENTE
+   ===================================================================== */
+
+/* Ricalcola i blocchi di una voce a partire dal database */
+function ricalcolaVoce(voce, db){
+    voce.proteine = ((db.proteine * voce.peso) / 100) / 7;
+    voce.carbo = ((db.carbo * voce.peso) / 100) / 9;
+    voce.grassi = ((db.grassi * voce.peso) / 100) / 3;
+    voce.carboReali = (db.carbo * voce.peso) / 100;
+    voce.qualita = db.qualita;
+}
+
+function aggiungiAlPasto(){
+    const nomeAlimento = el("alimento").value.trim();
+    if(nomeAlimento === ""){
+        alert("Seleziona un alimento dall'elenco");
+        return;
+    }
+
+    const peso = parseFloat(el("peso").value) || 0;
+    if(peso <= 0){
+        alert("Inserisci il peso");
+        return;
+    }
+
+    const db = trovaAlimento(nomeAlimento);
+    if(!db){
+        alert("Alimento non trovato nel database: " + nomeAlimento);
+        return;
+    }
+
+    const esistente = alimentiPasto.find(function(a){ return chiaveNome(a.nome) === chiaveNome(db.nome); });
+
+    if(esistente){
+        esistente.peso += peso;
+        ricalcolaVoce(esistente, db);
+    }else{
+        const voce = { nome: db.nome, peso: peso, bloccato: false };
+        if(ripristinoBlocco && chiaveNome(ripristinoBlocco.nome) === chiaveNome(db.nome)){
+            voce.bloccato = ripristinoBlocco.bloccato;
+        }
+        ricalcolaVoce(voce, db);
+        alimentiPasto.push(voce);
+    }
+    ripristinoBlocco = null;
+
+    ricalcolaTotalePasto();
+
+    el("peso").value = "100";
+    calcola();
+}
+
+function ricalcolaTotalePasto(){
+    messaggioBilancia = "";
+    totalePasto = { proteine: 0, carbo: 0, grassi: 0 };
+    alimentiPasto.forEach(function(a){
+        totalePasto.proteine += a.proteine;
+        totalePasto.carbo += a.carbo;
+        totalePasto.grassi += a.grassi;
+    });
+    aggiornaPasto();
+    aggiornaBarrePasto();
+    aggiornaSemaforoPasto();
+}
+
+function aggiornaPasto(){
+    let html = "";
+
+    alimentiPasto.forEach(function(a, index){
+        html += `
+<div class="cardAlimento" style="border-left:4px solid ${a.bloccato ? '#f59e0b' : '#22c55e'}">
+<b>${esc(a.nome)}</b>
+<br>
+<button class="backup" onclick="bloccaIngrediente(${index})">${a.bloccato ? "🔒" : "🔓"}</button>
+<br>
+${iconaQualita(a.qualita)} ${esc(a.qualita)}<br>
+${a.peso} g<br>
+P: ${a.proteine.toFixed(2)} | C: ${a.carbo.toFixed(2)} | G: ${a.grassi.toFixed(2)}
+<br><br>
+<button class="salva" onclick="modificaAlimentoPasto(${index})">✏️ Modifica</button>
+<button class="elimina" onclick="eliminaAlimentoPasto(${index})">Rimuovi</button>
+<div class="controlli-peso" aria-label="Modifica rapidamente il peso in grammi">
+    <button type="button" title="Diminuisci di 50 grammi" onclick="modificaPeso(${index},-50)">−50</button>
+    <button type="button" title="Aumenta di 50 grammi" onclick="modificaPeso(${index},50)">+50</button>
+    <button type="button" title="Diminuisci di 25 grammi" onclick="modificaPeso(${index},-25)">−25</button>
+    <button type="button" title="Aumenta di 25 grammi" onclick="modificaPeso(${index},25)">+25</button>
+    <button type="button" title="Diminuisci di 10 grammi" onclick="modificaPeso(${index},-10)">−10</button>
+    <button type="button" title="Aumenta di 10 grammi" onclick="modificaPeso(${index},10)">+10</button>
+    <button type="button" title="Diminuisci di 1 grammo" onclick="modificaPeso(${index},-1)">−1</button>
+    <button type="button" title="Aumenta di 1 grammo" onclick="modificaPeso(${index},1)">+1</button>
+</div>
+</div>
+`;
+    });
+
+    el("pastoCorrente").innerHTML = html || "Nessun alimento aggiunto";
+
+    el("totalePastoCorrente").innerHTML =
+        "<div class='evidenza'>🍽️ Totale Pasto<br><br>" +
+        "P: " + totalePasto.proteine.toFixed(2) +
+        " | C: " + totalePasto.carbo.toFixed(2) +
+        " | G: " + totalePasto.grassi.toFixed(2) +
+        "</div>";
+}
+
+function eliminaAlimentoPasto(indice){
+    alimentiPasto.splice(indice, 1);
+    if(alimentiPasto.length === 0){
+        svuotaPasto();
+        return;
+    }
+    ricalcolaTotalePasto();
+}
+
+function svuotaPasto(){
+    messaggioBilancia = "";
+    alimentiPasto = [];
+    totalePasto = { proteine: 0, carbo: 0, grassi: 0 };
+
+    el("totalePastoCorrente").innerHTML =
+        "<div class='evidenza'>🍽️ Totale Pasto<br><br>P: 0 | C: 0 | G: 0</div>";
+    el("pastoCorrente").innerHTML = "Nessun alimento aggiunto";
+    el("semaforoPasto").innerHTML = "⚪ Nessun alimento";
+    el("semaforoPasto").className = "semaforo ig-grigio";
+
+    el("bp").innerText = "0";
+    el("bc").innerText = "0";
+    el("bg").innerText = "0";
+    el("peso").value = "100";
+
+    calcola();
+    aggiornaBarrePasto();
+}
+
+function bloccaIngrediente(indice){
+    alimentiPasto[indice].bloccato = !alimentiPasto[indice].bloccato;
+    aggiornaPasto();
+}
+
+function modificaPeso(indice, variazione){
+    const voce = alimentiPasto[indice];
+    const db = trovaAlimento(voce.nome);
+    if(!db){
+        alert("Alimento non trovato nel database: " + voce.nome);
+        return;
+    }
+    voce.peso = Math.max(1, voce.peso + variazione);
+    ricalcolaVoce(voce, db);
+    ricalcolaTotalePasto();
+}
+
+/* Riporta l'ingrediente nel modulo per cambiarne la quantità: il lucchetto non si perde */
+function modificaAlimentoPasto(indice){
+    const voce = alimentiPasto[indice];
+    const db = trovaAlimento(voce.nome);
+
+    ripristinoBlocco = { nome: voce.nome, bloccato: !!voce.bloccato };
+
+    if(db) mostraAlimento(db);
+    else el("alimento").value = voce.nome;
+
+    el("peso").value = voce.peso;
+    eliminaAlimentoPasto(indice);
+    calcola();
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function aggiornaBarrePasto(){
+    const obiettivo = parseFloat(el("blocchiTargetPasto").value) || 0;
+
+    [["barraPastoProt", "statoPastoProt", totalePasto.proteine],
+     ["barraPastoCarbo", "statoPastoCarbo", totalePasto.carbo],
+     ["barraPastoGrassi", "statoPastoGrassi", totalePasto.grassi]].forEach(function(r){
+        el(r[0]).max = obiettivo;
+        el(r[0]).value = r[2];
+        el(r[1]).innerText = r[2].toFixed(2) + " / " + obiettivo;
+        coloraBarra(r[0], r[2], obiettivo);
+    });
+
+    aggiornaSuggerimenti();
+}
+
+function coloraBarra(id, valore, max){
+    const barra = el(id);
+    if(max <= 0){
+        barra.style.accentColor = "#3b82f6";
+    }else if(valore >= max && valore <= max * 1.05){
+        barra.style.accentColor = "#22c55e";
+    }else if(valore > max){
+        barra.style.accentColor = "#f59e0b";
+    }else{
+        barra.style.accentColor = "#3b82f6";
+    }
+}
+
+/* =====================================================================
+   SUGGERIMENTI PER IL PASTO
+   ===================================================================== */
+
+const TOLLERANZA_BLOCCHI = 0.15;
+let messaggioBilancia = "";
+
+const MACRO = {
+    proteine: { unita: 7, categoria: "Proteine" },
+    carbo: { unita: 9, categoria: "Carboidrati" },
+    grassi: { unita: 3, categoria: "Grassi" }
+};
+
+/* Alimenti da proporre in base al tipo di pasto (si usano solo se presenti nel database) */
+const PRANZO_CENA = {
+    proteine: ["POLLO (PETTO - una fettina = 90-120g)", "TACCHINO PETTO (una fettina = 90-120g)", "MERLUZZO", "SOGLIOLA",
+               "SPIGOLA", "NASELLO", "GAMBERO", "TONNO AL NATURALE (sgocciolato)", "TROTA", "TOFU duro", "BRESAOLA (una fetta = 7g)"],
+    carbo: ["BROCCOLI", "ZUCCHINE (una media = 100g)", "SPINACI", "FAGIOLINI", "CAVOLFIORE (uno medio = 400g)",
+            "MELANZANE", "PEPERONI", "POMODORI DA INSALATA (uno medio = 150g)", "LATTUGA", "FINOCCHI",
+            "MELE (una media = 150g)", "PERE (una media = 150g)", "FRAGOLE (una media = 30g)"],
+    grassi: ["OLIO DI OLIVA (un cucchiaio = 10grammi)", "AVOCADO", "MANDORLE SGUSCIATE", "OLIVE VERDI (una media = 3,3g)", "NOCCIOLE (una = 1g)"]
+};
+
+const PREFERITI = {
+    "Colazione": {
+        proteine: ["YOGURT TOTAL 0 grassi", "FIOCCHI DI LATTE - EXQUISA", "UOVA DI GALLINA (albume)",
+                   "RICOTTA MAGRA WEIGHT WATCHER (250g)", "EXQUISA EXTRA LIGHT", "ENERZONA proteine Whey 90% (misurino 8g)", "PROTEINE IN POLVERE"],
+        carbo: ["YOGURT (scremato)", "FIOCCHI D'AVENA", "MIRTILLI", "FRAGOLE (una media = 30g)", "MELE (una media = 150g)",
+                "KIWI", "ARANCE (una media = 200g)", "PERE (una media = 150g)", "FETTE INTEGRALI MISURA", "LATTE SCREMATO CARNIA"],
+        grassi: ["MANDORLE SGUSCIATE", "NOCI FRESCHE", "NOCCIOLE (una = 1g)", "PISTACCHI (uno = 0.5g)"]
+    },
+    "Spuntino": {
+        proteine: ["YOGURT TOTAL 0 grassi", "FIOCCHI DI LATTE - EXQUISA", "BRESAOLA (una fetta = 7g)", "EXQUISA EXTRA LIGHT",
+                   "ENERZONA proteine Whey 90% (misurino 8g)", "UOVA DI GALLINA (albume)"],
+        carbo: ["MELE (una media = 150g)", "PERE (una media = 150g)", "ARANCE (una media = 200g)", "KIWI", "FRAGOLE (una media = 30g)",
+                "MIRTILLI", "ALBICOCCHE (una media = 50g)", "PESCHE (una media = 150g)", "YOGURT (scremato)"],
+        grassi: ["MANDORLE SGUSCIATE", "NOCCIOLE (una = 1g)", "PISTACCHI (uno = 0.5g)", "NOCI FRESCHE", "OLIVE VERDI (una media = 3,3g)"]
+    },
+    "Pranzo": PRANZO_CENA,
+    "Cena": PRANZO_CENA
+};
+
+const CAMPO_DA_CATEGORIA = { "Proteine": "proteine", "Carboidrati": "carbo", "Grassi": "grassi" };
+
+/* Toglie solo le indicazioni di quantità tra parentesi, tenendo le specifiche (albume, scremato, petto...) */
+function nomeBreve(nome){
+    return String(nome).replace(/\(([^)]*)\)/g, function(m, dentro){
+        const t = dentro.replace(/\s*[-–]?\s*(?:\b(?:una|uno|un|busta|misurino|barretta|porzione|macellazione)\b|\d)[^)]*$/i, "").trim();
+        return t ? "(" + t + ")" : "";
+    }).replace(/\s+/g, " ").trim();
+}
+
+function alimentiSuggeriti(campo, esclusi){
+    const cfg = MACRO[campo];
+    const tipo = el("tipoPasto").value;
+    const elenco = (PREFERITI[tipo] || PREFERITI["Pranzo"])[campo];
+
+    let lista = elenco.map(trovaAlimento).filter(function(a){
+        return a && a[campo] > 0 && !esclusi.has(chiaveNome(a.nome));
+    });
+
+    /* Solo per pranzo e cena, se la lista non basta, si completa con altri alimenti favorevoli */
+    if(lista.length < 3 && (tipo === "Pranzo" || tipo === "Cena")){
+        const extra = alimenti.filter(function(a){
+            return a.categoria === cfg.categoria && a.qualita === "Favorevole" && a[campo] > 0 &&
+                   !esclusi.has(chiaveNome(a.nome)) && !lista.includes(a);
+        });
+        lista = lista.concat(extra);
+    }
+    return lista.slice(0, 3);
+}
+
+function arrotonda5(grammi){
+    return Math.max(5, Math.round(grammi / 5) * 5);
+}
+
+function aggiornaSuggerimenti(){
+    const box = el("suggerimentiPasto");
+
+    if(alimentiPasto.length === 0){
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+    }
+
+    const target = parseFloat(el("blocchiTargetPasto").value);
+    const presenti = new Set(alimentiPasto.map(function(a){ return chiaveNome(a.nome); }));
+    const righe = [];
+    let squilibrato = false;
+
+    if(messaggioBilancia) righe.push("⚖️ " + esc(messaggioBilancia));
+
+    if(Number.isFinite(target) && target > 0){
+        [["proteine", "proteine"], ["carbo", "carboidrati"], ["grassi", "grassi"]].forEach(function(m){
+            const campo = m[0], etichetta = m[1], cfg = MACRO[campo];
+            const diff = target - totalePasto[campo];
+            if(Math.abs(diff) <= TOLLERANZA_BLOCCHI) return;
+            squilibrato = true;
+
+            if(diff > 0){
+                const proposte = alimentiSuggeriti(campo, presenti).map(function(a){
+                    const g = arrotonda5(diff * cfg.unita / (a[campo] / 100));
+                    return "circa <b>" + g + " g</b> di " + iconaQualita(a.qualita) + " " + esc(nomeBreve(a.nome));
+                });
+                righe.push("➕ Mancano <b>" + diff.toFixed(2) + "</b> blocchi di " + etichetta +
+                    (proposte.length ? ": aggiungi " + proposte.join(", oppure ") + "." : "."));
+            }else{
+                const eccesso = -diff;
+                const contributori = alimentiPasto.filter(function(a){ return !a.bloccato && a[campo] > 0; })
+                    .sort(function(x, y){ return y[campo] - x[campo]; });
+                let testo = "➖ Ci sono <b>" + eccesso.toFixed(2) + "</b> blocchi in più di " + etichetta;
+
+                if(contributori.length > 0){
+                    const c = contributori[0];
+                    const db = trovaAlimento(c.nome);
+                    if(db && db[campo] > 0){
+                        let g = arrotonda5(eccesso * cfg.unita / (db[campo] / 100));
+                        g = Math.min(g, Math.max(Math.round(c.peso) - 1, 0));
+                        if(g > 0) testo += ": riduci " + esc(nomeBreve(c.nome)) + " di circa <b>" + g + " g</b>";
+                    }
+                    testo += ".";
+                }else{
+                    testo += " (gli ingredienti che li contengono sono bloccati 🔒).";
+                }
+                righe.push(testo);
+            }
+        });
+    }
+
+    const daEvitare = alimentiPasto.filter(function(a){ return a.qualita === "Da evitare"; });
+    daEvitare.slice(0, 3).forEach(function(a){
+        const db = trovaAlimento(a.nome);
+        const campo = db ? CAMPO_DA_CATEGORIA[db.categoria] : null;
+        let testo = "❌ <b>" + esc(nomeBreve(a.nome)) + "</b> è da evitare";
+        if(campo){
+            const alt = alimentiSuggeriti(campo, presenti).map(function(x){ return iconaQualita(x.qualita) + " " + esc(nomeBreve(x.nome)); });
+            if(alt.length) testo += ": prova a sostituirlo con " + alt.join(", ") + ".";
+            else testo += ".";
+        }else{
+            testo += ": valuta di sostituirlo con un alimento favorevole.";
+        }
+        righe.push(testo);
+    });
+
+    if(squilibrato){
+        righe.push("💡 Oppure premi <b>⚖️ Bilancia il pasto</b> per far calcolare i grammi.");
+    }else if(daEvitare.length === 0 && Number.isFinite(target) && target > 0){
+        righe.push("✅ Pasto bilanciato sui " + target + " blocchi" + (messaggioBilancia ? "." : ": nessuna correzione necessaria."));
+    }
+
+    box.style.display = "block";
+    box.innerHTML = "<b>💡 Suggerimenti per " + esc(el("tipoPasto").value.toLowerCase()) + "</b><br><br>" + righe.join("<br><br>");
+}
+
+/* Cerca i grammi che avvicinano P, C e G all'obiettivo (rapporto 1:1:1 in blocchi) */
+function bilanciaPastoZona(){
+    if(alimentiPasto.length === 0){
+        alert("Nessun alimento nel pasto");
+        return;
+    }
+
+    const target = Number(el("blocchiTargetPasto").value);
+    if(!Number.isFinite(target) || target <= 0){
+        alert("Inserisci un numero di blocchi valido");
+        return;
+    }
+
+    const modificabili = alimentiPasto.filter(function(a){ return !a.bloccato; });
+    if(modificabili.length === 0){
+        alert("Tutti gli ingredienti sono bloccati: sblocca almeno un alimento per bilanciare il pasto.");
+        return;
+    }
+
+    /* Prima controlla tutti i valori: se un alimento manca il pasto non viene modificato a metà */
+    const righe = [];
+    for(const voce of modificabili){
+        const db = trovaAlimento(voce.nome);
+        if(!db){
+            alert("Alimento non trovato nel database: " + voce.nome + ". Il pasto non è stato modificato.");
+            return;
+        }
+
+        const vettore = [db.proteine / 700, db.carbo / 900, db.grassi / 300];
+        if(vettore.every(function(v){ return v === 0; })) continue;
+
+        righe.push({
+            voce: voce,
+            db: db,
+            vettore: vettore,
+            pesoIniziale: Math.max(1, Number(voce.peso) || 1),
+            peso: Math.max(1, Number(voce.peso) || 1)
+        });
+    }
+
+    if(righe.length === 0){
+        alert("Non ci sono alimenti modificabili con valori nutrizionali validi.");
+        return;
+    }
+
+    /* Gli ingredienti bloccati restano fissi ma contano nel totale */
+    const totale = [0, 0, 0];
+    alimentiPasto.forEach(function(voce){
+        if(voce.bloccato){
+            totale[0] += voce.proteine;
+            totale[1] += voce.carbo;
+            totale[2] += voce.grassi;
+        }
+    });
+    righe.forEach(function(r){
+        for(let k = 0; k < 3; k++) totale[k] += r.vettore[k] * r.peso;
+    });
+
+    /* Discesa coordinata con una piccola regolarizzazione verso i grammi di partenza */
+    const obiettivo = [target, target, target];
+    const regolarizzazione = 0.015;
+
+    for(let passaggio = 0; passaggio < 120; passaggio++){
+        let variazioneMassima = 0;
+
+        for(const r of righe){
+            const v = r.vettore;
+            const scala = Math.max(50, r.pesoIniziale);
+            let numeratore = 0;
+            let denominatore = regolarizzazione / (scala * scala);
+
+            for(let k = 0; k < 3; k++){
+                const residuo = obiettivo[k] - totale[k];
+                numeratore += v[k] * residuo;
+                denominatore += v[k] * v[k];
+            }
+            numeratore += regolarizzazione * (r.pesoIniziale - r.peso) / (scala * scala);
+
+            if(denominatore <= 0) continue;
+
+            const delta = numeratore / denominatore;
+            const nuovoPeso = Math.max(1, Math.min(2000, Math.round(r.peso + delta)));
+            const deltaEffettivo = nuovoPeso - r.peso;
+
+            if(deltaEffettivo !== 0){
+                r.peso = nuovoPeso;
+                variazioneMassima = Math.max(variazioneMassima, Math.abs(deltaEffettivo));
+                for(let k = 0; k < 3; k++) totale[k] += v[k] * deltaEffettivo;
+            }
+        }
+
+        if(variazioneMassima < 1) break;
+    }
+
+    righe.forEach(function(r){
+        r.voce.peso = r.peso;
+        ricalcolaVoce(r.voce, r.db);
+    });
+
+    ricalcolaTotalePasto();
+
+    const massimoScostamento = Math.max(
+        Math.abs(totalePasto.proteine - target),
+        Math.abs(totalePasto.carbo - target),
+        Math.abs(totalePasto.grassi - target)
+    );
+
+    messaggioBilancia = (massimoScostamento <= TOLLERANZA_BLOCCHI
+        ? "Pasto bilanciato"
+        : "Bilanciamento eseguito: con gli alimenti presenti non si avvicinano oltre tutti e tre i valori")
+        + " (P " + totalePasto.proteine.toFixed(2) + " · C " + totalePasto.carbo.toFixed(2) +
+        " · G " + totalePasto.grassi.toFixed(2) + " · obiettivo " + target + " blocchi).";
+
+    aggiornaSuggerimenti();
+}
+
+/* =====================================================================
+   PASTI SALVATI, OBIETTIVO GIORNALIERO, BACKUP
+   ===================================================================== */
+
+function salvaPasto(){
+    if(alimentiPasto.length === 0){
+        alert("Aggiungi almeno un alimento al pasto");
+        return;
+    }
+
+    const pasti = leggiLS(CHIAVE_PASTI, []);
+    const lista = Array.isArray(pasti) ? pasti : [];
+
+    lista.push({
+        pasto: el("tipoPasto").value,
+        alimento: alimentiPasto.map(function(a){ return a.nome + " (" + a.peso + "g)"; }).join(", "),
+        proteine: totalePasto.proteine.toFixed(2),
+        carbo: totalePasto.carbo.toFixed(2),
+        grassi: totalePasto.grassi.toFixed(2)
+    });
+
+    if(!scriviLS(CHIAVE_PASTI, lista)) return;
+
+    svuotaPasto();
+    caricaPasti();
+    aggiornaBarrePasto();
+    alert("Pasto salvato");
+}
+
+function eliminaPasto(indice){
+    const pasti = leggiLS(CHIAVE_PASTI, []);
+    if(!Array.isArray(pasti)) return;
+    pasti.splice(indice, 1);
+    scriviLS(CHIAVE_PASTI, pasti);
+    caricaPasti();
+}
+
+function caricaPasti(){
+    const grezzi = leggiLS(CHIAVE_PASTI, []);
+    const pasti = Array.isArray(grezzi) ? grezzi : [];
+
+    let html = "";
+    totaliGiornalieri = { proteine: 0, carbo: 0, grassi: 0 };
+
+    pasti.forEach(function(item, index){
+        const p = parseFloat(item.proteine) || 0;
+        const c = parseFloat(item.carbo) || 0;
+        const g = parseFloat(item.grassi) || 0;
+
+        totaliGiornalieri.proteine += p;
+        totaliGiornalieri.carbo += c;
+        totaliGiornalieri.grassi += g;
+
+        html += `
+<div class="pasto">
+<b>${esc(item.pasto)}</b><br>
+${esc(item.alimento)}<br><br>
+P: ${p.toFixed(2)} | C: ${c.toFixed(2)} | G: ${g.toFixed(2)}
+<br><br>
+<button class="elimina" onclick="eliminaPasto(${index})">Elimina</button>
+</div>
+`;
+    });
+
+    el("elenco").innerHTML = html;
+    el("totProt").innerText = totaliGiornalieri.proteine.toFixed(2);
+    el("totCarbo").innerText = totaliGiornalieri.carbo.toFixed(2);
+    el("totGrassi").innerText = totaliGiornalieri.grassi.toFixed(2);
+
+    aggiornaObiettivo();
+}
+
+function aggiornaObiettivo(){
+    const obiettivo = parseFloat(el("obiettivoBlocchi").value) || 12;
+
+    [["barraProteine", "statoProteine", totaliGiornalieri.proteine],
+     ["barraCarbo", "statoCarbo", totaliGiornalieri.carbo],
+     ["barraGrassi", "statoGrassi", totaliGiornalieri.grassi]].forEach(function(r){
+        el(r[0]).max = obiettivo;
+        el(r[0]).value = r[2];
+        el(r[1]).innerText = r[2].toFixed(2) + " / " + obiettivo;
+    });
+
+    scriviLS(CHIAVE_OBIETTIVO, obiettivo);
+}
+
+function esportaBackup(){
+    const dati = {
+        versione: 3,
+        pasti: leggiLS(CHIAVE_PASTI, []),
+        alimentiPersonalizzati: leggiPersonalizzati(),
+        alimentiPreferiti: leggiNomiPreferiti(),
+        pastiPreferiti: leggiPastiPreferiti(),
+        obiettivoZona: leggiLS(CHIAVE_OBIETTIVO, 12)
+    };
+
+    const blob = new Blob([JSON.stringify(dati, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "BackupZona.json";
+    link.click();
+    setTimeout(function(){ URL.revokeObjectURL(link.href); }, 1000);
+}
+
+function pastoValido(item){
+    return item && typeof item === "object" &&
+        typeof item.pasto === "string" && item.pasto.length <= 60 &&
+        typeof item.alimento === "string" && item.alimento.length <= 4000 &&
+        Number.isFinite(Number(item.proteine)) &&
+        Number.isFinite(Number(item.carbo)) &&
+        Number.isFinite(Number(item.grassi));
+}
+
+function importaBackup(event){
+    const file = event.target.files && event.target.files[0];
+    if(!file) return;
+
+    const lettore = new FileReader();
+
+    lettore.onload = function(e){
+        try{
+            const dati = JSON.parse(e.target.result);
+
+            /* Formato vecchio: solo l'elenco dei pasti. Formato nuovo: oggetto completo. */
+            const pasti = Array.isArray(dati) ? dati : dati && dati.pasti;
+            const personalizzati = (!Array.isArray(dati) && dati && Array.isArray(dati.alimentiPersonalizzati))
+                ? dati.alimentiPersonalizzati : null;
+
+            if(!Array.isArray(pasti)){
+                throw new Error("Il backup deve contenere un elenco di pasti.");
+            }
+            if(!pasti.every(pastoValido)){
+                throw new Error("La struttura del backup non è compatibile con questa applicazione.");
+            }
+
+            let nuoviPersonalizzati = null;
+            if(personalizzati){
+                nuoviPersonalizzati = [];
+                personalizzati.forEach(function(a){
+                    const pulito = sanificaAlimento(a);
+                    if(pulito) nuoviPersonalizzati.push(pulito);
+                });
+            }
+
+            let nuoviPrefAlimenti = null, nuoviPrefPasti = null;
+            if(!Array.isArray(dati) && dati){
+                if(Array.isArray(dati.alimentiPreferiti)) nuoviPrefAlimenti = sanificaNomi(dati.alimentiPreferiti);
+                if(Array.isArray(dati.pastiPreferiti)){
+                    nuoviPrefPasti = dati.pastiPreferiti.map(sanificaPastoPreferito).filter(Boolean);
+                }
+            }
+
+            const testoConferma = "Il ripristino sostituirà i pasti salvati" +
+                (nuoviPersonalizzati ? " e gli alimenti personalizzati" : "") +
+                ((nuoviPrefAlimenti || nuoviPrefPasti) ? " e i preferiti" : "") + ". Continuare?";
+            if(!confirm(testoConferma)) return;
+
+            scriviLS(CHIAVE_PASTI, pasti);
+
+            if(nuoviPersonalizzati){
+                salvaPersonalizzati(nuoviPersonalizzati);
+                ricostruisciAlimenti();
+                aggiornaTuttiGliElenchi();
+            }
+
+            if(nuoviPrefAlimenti) scriviLS(CHIAVE_PREF_ALIMENTI, nuoviPrefAlimenti);
+            if(nuoviPrefPasti) scriviLS(CHIAVE_PREF_PASTI, nuoviPrefPasti);
+            if(nuoviPrefAlimenti || nuoviPrefPasti){
+                filtraAlimentiCompleto();
+                inizializzaCostruttoreZona();
+                caricaPastiPreferiti();
+                aggiornaStatoBottoneModifica();
+            }
+
+            if(!Array.isArray(dati) && Number.isFinite(Number(dati.obiettivoZona)) && Number(dati.obiettivoZona) > 0){
+                el("obiettivoBlocchi").value = Number(dati.obiettivoZona);
+            }
+
+            caricaPasti();
+            alert("Backup ripristinato correttamente.");
+        }catch(errore){
+            alert("Impossibile importare il backup: " + errore.message);
+        }finally{
+            event.target.value = "";
+        }
+    };
+
+    lettore.onerror = function(){
+        alert("Errore durante la lettura del file di backup.");
+        event.target.value = "";
+    };
+
+    lettore.readAsText(file);
+}
+
+/* =====================================================================
+   ALIMENTI PERSONALIZZATI / MODIFICA ALIMENTO
+   ===================================================================== */
+
+function aggiornaTuttiGliElenchi(){
+    caricaAlimentiPersonalizzati();
+    filtraAlimentiCompleto();
+    inizializzaCostruttoreZona();
+    aggiornaStatoBottoneModifica();
+}
+
+function mostraFormAlimento(){
+    el("areaDatabase").style.display = "none";
+    el("areaManuale").style.display = "block";
+    el("btnTorna").style.display = "inline-block";
+}
+
+function apriNuovoAlimento(){
+    alimentoInModifica = null;
+    mostraFormAlimento();
+
+    el("alimentoManuale").value = "";
+    el("alimento").value = "";
+    el("infoAlimento").innerHTML = "Nessun alimento selezionato";
+    aggiornaSemaforoAlimento(null);
+    el("proteine").value = "";
+    el("carbo").value = "";
+    el("grassi").value = "";
+    el("qualitaManuale").value = "Moderazione";
+
+    aggiornaStatoBottoneModifica();
+    calcola();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function apriFormModifica(a){
+    alimentoInModifica = a;
+    mostraFormAlimento();
+
+    el("alimentoManuale").value = a.nome;
+    el("proteine").value = a.proteine;
+    el("carbo").value = a.carbo;
+    el("grassi").value = a.grassi;
+    el("qualitaManuale").value = a.qualita;
+
+    calcola();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* Pulsante accanto a "Nuovo Alimento": modifica l'alimento selezionato (database o personalizzato) */
+function modificaAlimentoSelezionato(){
+    const a = trovaAlimento(el("alimento").value);
+    if(!a){
+        alert("Seleziona prima un alimento da modificare");
+        return;
+    }
+    apriFormModifica(a);
+}
+
+function tornaAlDatabase(){
+    el("areaManuale").style.display = "none";
+    el("btnTorna").style.display = "none";
+    el("areaDatabase").style.display = "block";
+
+    alimentoInModifica = null;
+
+    el("alimentoManuale").value = "";
+    el("alimentoSelezionato").selectedIndex = -1;
+    el("alimento").value = "";
+    el("infoAlimento").innerHTML = "Nessun alimento selezionato";
+    el("proteine").value = "";
+    el("carbo").value = "";
+    el("grassi").value = "";
+    aggiornaSemaforoAlimento(null);
+
+    aggiornaStatoBottoneModifica();
+    calcola();
+}
+
+function salvaAlimentoPersonalizzato(){
+    const nome = el("alimentoManuale").value.trim();
+    if(nome === ""){
+        alert("Inserisci il nome dell'alimento");
+        return;
+    }
+
+    const valori = [el("proteine").value, el("carbo").value, el("grassi").value];
+    if(valori.some(function(v){ return v !== "" && !(parseFloat(v) >= 0); })){
+        alert("Proteine, carboidrati e grassi devono essere numeri positivi o zero");
+        return;
+    }
+
+    const nuovo = sanificaAlimento({
+        nome: nome,
+        proteine: el("proteine").value,
+        carbo: el("carbo").value,
+        grassi: el("grassi").value,
+        qualita: el("qualitaManuale").value
+    });
+
+    if(!nuovo){
+        alert("Dati non validi");
+        return;
+    }
+
+    let personalizzati = leggiPersonalizzati();
+    const eraPersonalizzato = alimentoInModifica && alimentoInModifica.fonte === "PERSONALIZZATO";
+    const stessoNomeDiPrima = alimentoInModifica && chiaveNome(alimentoInModifica.nome) === chiaveNome(nuovo.nome);
+
+    /* Nuovo alimento con un nome già esistente (e non è la modifica dello stesso alimento) */
+    if(!stessoNomeDiPrima && trovaAlimento(nuovo.nome)){
+        if(!confirm("Esiste già un alimento chiamato \"" + nuovo.nome + "\". Vuoi sostituirlo con questi valori?")){
+            return;
+        }
+    }
+
+    /* Rinomina di un alimento personalizzato: rimuove il vecchio, niente doppioni */
+    if(eraPersonalizzato && !stessoNomeDiPrima){
+        const vecchio = chiaveNome(alimentoInModifica.nome);
+        personalizzati = personalizzati.filter(function(a){ return chiaveNome(a.nome) !== vecchio; });
+    }
+
+    personalizzati = personalizzati.filter(function(a){ return chiaveNome(a.nome) !== chiaveNome(nuovo.nome); });
+    personalizzati.push(nuovo);
+
+    if(!salvaPersonalizzati(personalizzati)) return;
+
+    ricostruisciAlimenti();
+    aggiornaTuttiGliElenchi();
+
+    el("alimentoManuale").value = "";
+    el("peso").value = "100";
+    el("areaDatabase").style.display = "block";
+    el("areaManuale").style.display = "none";
+    el("btnTorna").style.display = "none";
+    el("alimentoSelezionato").selectedIndex = -1;
+    el("alimento").value = "";
+    el("infoAlimento").innerHTML = "Nessun alimento selezionato";
+    aggiornaSemaforoAlimento(null);
+    el("proteine").value = "";
+    el("carbo").value = "";
+    el("grassi").value = "";
+    alimentoInModifica = null;
+
+    aggiornaStatoBottoneModifica();
+    calcola();
+    alert("✅ Alimento salvato definitivamente");
+}
+
+function caricaAlimentiPersonalizzati(){
+    const personalizzati = leggiPersonalizzati();
+    let html = "";
+
+    personalizzati.forEach(function(a, index){
+        const sostituisce = alimentiBase.some(function(b){ return chiaveNome(b.nome) === chiaveNome(a.nome); });
+        html += `
+<div class="pasto">
+<b>${esc(a.nome)}</b>${sostituisce ? " <small>(sostituisce quello del database)</small>" : ""}<br>
+${badgeQualita(a.qualita)}<br>
+P: ${a.proteine} | C: ${a.carbo} | G: ${a.grassi}
+<br><br>
+<button class="salva" onclick="modificaAlimento(${index})">✏️ Modifica</button>
+<button class="elimina" onclick="eliminaAlimentoPersonalizzato(${index})">🗑️ Elimina</button>
+</div>
+`;
+    });
+
+    el("listaAlimentiPersonalizzati").innerHTML = html || "Nessun alimento personalizzato";
+}
+
+function modificaAlimento(indice){
+    const a = leggiPersonalizzati()[indice];
+    if(!a) return;
+    apriFormModifica(a);
+}
+
+function eliminaAlimentoPersonalizzato(indice){
+    const personalizzati = leggiPersonalizzati();
+    const daEliminare = personalizzati[indice];
+    if(!daEliminare) return;
+
+    const sostituisce = alimentiBase.some(function(b){ return chiaveNome(b.nome) === chiaveNome(daEliminare.nome); });
+    const domanda = sostituisce
+        ? "Eliminare le tue modifiche a \"" + daEliminare.nome + "\"? Tornerà il valore originale del database."
+        : "Eliminare questo alimento?";
+    if(!confirm(domanda)) return;
+
+    personalizzati.splice(indice, 1);
+    if(!salvaPersonalizzati(personalizzati)) return;
+
+    ricostruisciAlimenti();
+
+    el("alimentoSelezionato").selectedIndex = -1;
+    el("alimento").value = "";
+    el("infoAlimento").innerHTML = "Nessun alimento selezionato";
+    aggiornaSemaforoAlimento(null);
+
+    aggiornaTuttiGliElenchi();
+}
+
+/* =====================================================================
+   FILTRI ED ELENCO ALIMENTI
+   ===================================================================== */
+
+function filtraAlimentiCompleto(){
+    const categoria = el("categoriaFiltro").value;
+    const qualita = el("filtroQualita").value;
+    const testo = el("ricercaAlimento").value.toLowerCase().trim();
+    const soloPreferiti = el("filtroPreferiti").value === "Preferiti";
+    const pref = preferitiSet();
+
+    const lista = alimenti.filter(function(a){
+        return (!soloPreferiti || pref.has(chiaveNome(a.nome))) &&
+               (categoria === "Tutti" || a.categoria === categoria) &&
+               (qualita === "Tutte" || a.qualita === qualita) &&
+               corrisponde(a.nome, testo);
+    });
+
+    aggiornaListaFiltrata(lista);
+}
+
+function aggiornaListaFiltrata(lista){
+    /* Sempre in ordine alfabetico (regole italiane) */
+    lista.sort(function(a, b){ return collatore.compare(a.nome, b.nome); });
+
+    const select = el("alimentoSelezionato");
+    const selezionePrecedente = select.value;
+    const pref = preferitiSet();
+    select.innerHTML = "";
+
+    const segnaposto = document.createElement("option");
+    segnaposto.value = "";
+    segnaposto.text = lista.length ? "🔍 Seleziona un alimento..." : "Nessun alimento trovato";
+    segnaposto.selected = true;
+    segnaposto.disabled = true;
+    segnaposto.hidden = true;
+    select.appendChild(segnaposto);
+
+    lista.forEach(function(a){
+        const opzione = document.createElement("option");
+        opzione.value = a.nome;
+        opzione.text = etichettaAlimento(a, pref);
+        select.appendChild(opzione);
+    });
+
+    /* Se l'alimento scelto è ancora in elenco resta selezionato */
+    if(selezionePrecedente && lista.some(function(a){ return a.nome === selezionePrecedente; })){
+        select.value = selezionePrecedente;
+    }
+}
+
+/* =====================================================================
+   COSTRUTTORE PASTO ZONA
+   ===================================================================== */
+
+function inizializzaCostruttoreZona(){
+    const selezioni = [
+        { select: el("proteinaZona"), ricerca: el("ricercaProteinaZona"), campo: "proteine", categoria: "Proteine", nome: "Proteine" },
+        { select: el("carboZona"), ricerca: el("ricercaCarboZona"), campo: "carbo", categoria: "Carboidrati", nome: "Carboidrati" },
+        { select: el("grassoZona"), ricerca: el("ricercaGrassoZona"), campo: "grassi", categoria: "Grassi", nome: "Grassi" }
+    ];
+
+    const pref = preferitiSet();
+
+    selezioni.forEach(function(s){
+        const precedente = s.select.value;
+        const testo = s.ricerca.value;
+        s.select.innerHTML = "";
+
+        /* Tutti gli alimenti che contengono quel macronutriente, in tre gruppi A-Z,
+           ridotti man mano che si scrive nel campo di ricerca */
+        const gruppi = [
+            { titolo: s.nome + " (alimenti principalmente di questa categoria)", test: function(a){ return a.categoria === s.categoria; } },
+            { titolo: "Misti (più macronutrienti)", test: function(a){ return a.categoria === "Misto"; } },
+            { titolo: "Altri alimenti che contengono anche " + s.nome.toLowerCase(), test: function(a){ return a.categoria !== s.categoria && a.categoria !== "Misto"; } }
+        ];
+
+        let totale = 0;
+
+        gruppi.forEach(function(gr){
+            const elenco = alimenti.filter(function(a){
+                return a[s.campo] > 0 && gr.test(a) && corrisponde(a.nome, testo);
+            });
+            if(elenco.length === 0) return;
+
+            const blocco = document.createElement("optgroup");
+            blocco.label = gr.titolo;
+
+            elenco.forEach(function(a){
+                const op = document.createElement("option");
+                op.value = a.nome;
+                op.text = etichettaAlimento(a, pref);
+                blocco.appendChild(op);
+                totale++;
+            });
+
+            s.select.appendChild(blocco);
+        });
+
+        if(totale === 0){
+            const vuoto = document.createElement("option");
+            vuoto.value = "";
+            vuoto.text = "Nessun alimento trovato";
+            s.select.appendChild(vuoto);
+            return;
+        }
+
+        /* Mantiene la scelta precedente se è ancora in elenco, altrimenti seleziona il primo risultato */
+        s.select.value = precedente;
+        if(s.select.value !== precedente || !precedente){
+            s.select.selectedIndex = 0;
+        }
+    });
+}
+
+function calcolaBlocchiZona(){
+    const blocchi = parseFloat(el("blocchiRichiesti").value) || 0;
+    if(blocchi <= 0){
+        alert("Inserisci i blocchi");
+        return;
+    }
+
+    const aP = trovaAlimento(el("proteinaZona").value);
+    const aC = trovaAlimento(el("carboZona").value);
+    const aG = trovaAlimento(el("grassoZona").value);
+
+    if(!aP || !aC || !aG){
+        alert("Seleziona gli alimenti");
+        return;
+    }
+    if(aP.proteine <= 0 || aC.carbo <= 0 || aG.grassi <= 0){
+        alert("Valori nutrizionali non validi");
+        return;
+    }
+
+    const proteineNecessarie = blocchi * 7;
+    const carboNecessari = blocchi * 9;
+    const grassiNecessari = blocchi * 3;
+
+    const grammiP = (proteineNecessarie / aP.proteine) * 100;
+    const grammiC = (carboNecessari / aC.carbo) * 100;
+    const grammiG = (grassiNecessari / aG.grassi) * 100;
+
+    /* Totali reali: ogni alimento porta con sé anche gli altri macronutrienti */
+    const reali = {
+        p: (grammiP * aP.proteine + grammiC * aC.proteine + grammiG * aG.proteine) / 100,
+        c: (grammiP * aP.carbo + grammiC * aC.carbo + grammiG * aG.carbo) / 100,
+        g: (grammiP * aP.grassi + grammiC * aC.grassi + grammiG * aG.grassi) / 100
+    };
+
+    el("risultatoZona").innerHTML =
+        "<div class='pasto'>" +
+        "<h3>🎯 Pasto da " + blocchi + " Blocchi</h3>" +
+        "<b>Proteine</b><br>" + esc(aP.nome) + ": " + grammiP.toFixed(0) + " g<br><br>" +
+        "<b>Carboidrati</b><br>" + esc(aC.nome) + ": " + grammiC.toFixed(0) + " g<br><br>" +
+        "<b>Grassi</b><br>" + esc(aG.nome) + ": " + grammiG.toFixed(0) + " g<br><br>" +
+        "<hr>" +
+        "<b>Obiettivo per macronutriente</b><br>" +
+        "Proteine: " + proteineNecessarie.toFixed(1) + " g<br>" +
+        "Carboidrati: " + carboNecessari.toFixed(1) + " g<br>" +
+        "Grassi: " + grassiNecessari.toFixed(1) + " g<br><br>" +
+        "<b>Totali reali con questi alimenti</b><br>" +
+        "Proteine: " + reali.p.toFixed(1) + " g (" + (reali.p / 7).toFixed(2) + " blocchi)<br>" +
+        "Carboidrati: " + reali.c.toFixed(1) + " g (" + (reali.c / 9).toFixed(2) + " blocchi)<br>" +
+        "Grassi: " + reali.g.toFixed(1) + " g (" + (reali.g / 3).toFixed(2) + " blocchi)<br><br>" +
+        "<small>Le quantità sono calcolate sul macronutriente principale di ogni alimento; " +
+        "gli altri macronutrienti contenuti si sommano ai totali reali.</small>" +
+        "</div>";
+}
+
+/* =====================================================================
+   ACCORDION
+   ===================================================================== */
+
+function toggleSezione(idContenitore, idIcona){
+    const contenitore = el(idContenitore);
+    const icona = el(idIcona);
+    const chiuso = contenitore.style.display === "none";
+    contenitore.style.display = chiuso ? "block" : "none";
+    icona.innerHTML = chiuso ? "▼" : "►";
+}
+
+function togglePastiSalvati(){ toggleSezione("contenitorePasti", "iconaPasti"); }
+function toggleCostruttoreZona(){ toggleSezione("contenitoreZona", "iconaZona"); }
+function toggleAlimentiPersonalizzati(){ toggleSezione("contenitoreAlimenti", "iconaAlimenti"); }
+
+/* =====================================================================
+   AVVIO
+   ===================================================================== */
+
+/* Installazione come app (Android / Chrome) */
+let eventoInstallazione = null;
+
+window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    eventoInstallazione = e;
+    el("btnInstalla").style.display = "block";
+});
+
+window.addEventListener("appinstalled", function(){
+    eventoInstallazione = null;
+    el("btnInstalla").style.display = "none";
+});
+
+function installaApp(){
+    if(!eventoInstallazione) return;
+    eventoInstallazione.prompt();
+    eventoInstallazione.userChoice.finally(function(){
+        eventoInstallazione = null;
+        el("btnInstalla").style.display = "none";
+    });
+}
+
+window.addEventListener("load", function(){
+
+    if(typeof databaseCompleto === "undefined" || !Array.isArray(databaseCompleto)){
+        alert("Database alimenti non trovato: controlla che il file database.js sia nella stessa cartella di questa pagina.");
+        alimentiBase = [];
+    }else{
+        alimentiBase = databaseCompleto.map(creaAlimentoDaDatabase);
+        if(!databaseCompleto.some(function(a){ return a.qualita; })){
+            alert("Stai usando un vecchio database.js (senza valutazione Favorevole / Moderazione / Da evitare). Sostituiscilo con il nuovo e aggiorna la pagina (se usi l'app installata, svuota la cache o reinstallala).");
+        }
+    }
+
+    ricostruisciAlimenti();
+    inizializzaCostruttoreZona();
+
+    const obiettivo = leggiLS(CHIAVE_OBIETTIVO, null);
+    if(obiettivo){
+        el("obiettivoBlocchi").value = obiettivo;
+    }
+
+    el("alimento").value = "";
+    el("infoAlimento").innerHTML = "Nessun alimento selezionato";
+    aggiornaSemaforoAlimento(null);
+    el("proteine").value = "";
+    el("carbo").value = "";
+    el("grassi").value = "";
+    el("bp").innerText = "0";
+    el("bc").innerText = "0";
+    el("bg").innerText = "0";
+
+    caricaPasti();
+    caricaAlimentiPersonalizzati();
+    caricaPastiPreferiti();
+    calcolaRapido();
+    calcola();
+    aggiornaBarrePasto();
+    filtraAlimentiCompleto();
+    aggiornaStatoBottoneModifica();
+
+    if("serviceWorker" in navigator){
+        navigator.serviceWorker.register("./service-worker.js").catch(function(){ /* facoltativo */ });
+    }
+});
+</script>
+
+</body>
+</html>
