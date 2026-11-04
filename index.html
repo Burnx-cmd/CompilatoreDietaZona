@@ -545,10 +545,9 @@ margin-right:0;
 
         <div class="azioni-alimento">
             <button type="button" class="calcola" onclick="avviaScanCodice()">🔢 Codice a barre</button>
-            <button type="button" class="backup" onclick="scegliFotoEtichetta()">🏷️ Valori nutrizionali</button>
+            <button type="button" class="backup" onclick="apriCalcoloBlocchi()">🧮 Calcolo blocchi</button>
         </div>
 
-        <input type="file" id="fotoEtichetta" accept="image/*" capture="environment" style="display:none" onchange="leggiEtichetta(event)">
         <video id="videoScansione" playsinline muted style="display:none;width:100%;border-radius:10px;margin-top:10px;background:#000"></video>
 
         <label for="codiceManuale">Oppure scrivi il codice a barre</label>
@@ -560,6 +559,29 @@ margin-right:0;
         <div id="statoScansione" class="nota" style="margin-top:10px"></div>
 
         <button type="button" class="elimina" onclick="chiudiScansione()">✖ Chiudi</button>
+    </div>
+
+    <div id="pannelloBlocchi" class="pasto" style="display:none;margin-top:12px">
+        <b>🧮 Calcolo blocchi</b>
+
+        <div class="griglia-rapida">
+            <div>
+                <label for="rapidoBlocchi">Quanti blocchi?</label>
+                <input type="text" id="rapidoBlocchi" inputmode="decimal" value="1" autocomplete="off" oninput="calcolaGrammiBlocchi()">
+            </div>
+            <div>
+                <label for="rapidoMacro">Blocchi di</label>
+                <select id="rapidoMacro" onchange="macroScelto()">
+                    <option value="proteine">Proteine</option>
+                    <option value="carbo">Carboidrati</option>
+                    <option value="grassi">Grassi</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="risultatoBlocchi" style="margin-top:12px"></div>
+
+        <button type="button" class="elimina" onclick="chiudiCalcoloBlocchi()">✖ Chiudi</button>
     </div>
 
 </div>
@@ -1615,6 +1637,11 @@ function calcolaRapido(){
         " g di carboidrati, " + gg.toFixed(1) + " g di grassi" +
         "<br>Per 100 g: P " + (p / 7).toFixed(2) + " | C " + (c / 9).toFixed(2) + " | G " + (g / 3).toFixed(2) + " blocchi" +
         avviso;
+
+    if(el("pannelloBlocchi").style.display === "block"){
+        suggerisciMacroBlocchi();
+        calcolaGrammiBlocchi();
+    }
 }
 
 /* Svuota il calcolo rapido per inserire un nuovo alimento */
@@ -1642,7 +1669,7 @@ function statoScansione(testo){
 
 function apriScansione(){
     el("pannelloScansione").style.display = "block";
-    statoScansione("Scegli come scansionare l'alimento.");
+    statoScansione("Scansiona il codice a barre, poi usa Calcolo blocchi.");
 }
 
 function fermaCamera(){
@@ -1736,7 +1763,7 @@ async function cercaCodice(codice){
 
         const dati = await risposta.json();
         if(!dati || dati.status !== 1 || !dati.product){
-            statoScansione("Prodotto " + codice + " non trovato su Open Food Facts. Prova con la foto dei valori nutrizionali.");
+            statoScansione("Prodotto " + codice + " non trovato su Open Food Facts: inserisci i valori a mano.");
             return;
         }
 
@@ -1751,14 +1778,14 @@ async function cercaCodice(codice){
             .filter(Boolean).join(" - ").slice(0, 120);
 
         if(valori.p === null && valori.c === null && valori.g === null){
-            statoScansione("Prodotto trovato (" + (nome || codice) + ") ma senza valori nutrizionali. Prova con la foto dell'etichetta.");
+            statoScansione("Prodotto trovato (" + (nome || codice) + ") ma senza valori nutrizionali: inseriscili a mano.");
             return;
         }
 
         applicaValoriScansione(nome, valori);
         statoScansione("✅ Trovato: " + (nome || codice) + ". Valori per 100 g da Open Food Facts: controllali con l'etichetta.");
     }catch(e){
-        statoScansione("Non riesco a contattare Open Food Facts (serve la connessione a internet). Riprova, oppure usa la foto dei valori nutrizionali.");
+        statoScansione("Non riesco a contattare Open Food Facts (serve la connessione a internet). Riprova, oppure inserisci i valori a mano.");
     }
 }
 
@@ -1770,98 +1797,81 @@ function applicaValoriScansione(nome, valori){
     calcolaRapido();
 }
 
-/* Cerca proteine, carboidrati e grassi nel testo letto da una tabella nutrizionale.
-   Si usa il primo numero dopo ogni voce, di solito la colonna "per 100 g". */
-function estraiValoriNutrizionali(testo){
-    const t = String(testo || "").toLowerCase().replace(/\s+/g, " ").replace(/,/g, ".");
-    const NUM = "(\\d{1,3}(?:\\.\\d+)?)";
+/* =====================================================================
+   CALCOLO BLOCCHI → GRAMMI (per l'alimento del calcolo rapido)
+   ===================================================================== */
 
-    function primo(inizio){
-        const conUnita = t.match(new RegExp(inizio + "[^\\d]{0,20}?" + NUM + "\\s*g\\b"));
-        const senzaUnita = t.match(new RegExp(inizio + "[^\\d]{0,20}?" + NUM));
-        const m = conUnita || senzaUnita;
-        return m ? valoreNutriente(m[1]) : null;
+const UNITA_BLOCCO = { proteine: 7, carbo: 9, grassi: 3 };
+const NOME_MACRO = { proteine: "proteine", carbo: "carboidrati", grassi: "grassi" };
+let macroBlocchiScelto = false;
+
+function apriCalcoloBlocchi(){
+    el("pannelloBlocchi").style.display = "block";
+    macroBlocchiScelto = false;
+    suggerisciMacroBlocchi();
+    calcolaGrammiBlocchi();
+    if(el("pannelloBlocchi").scrollIntoView) el("pannelloBlocchi").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function chiudiCalcoloBlocchi(){
+    el("pannelloBlocchi").style.display = "none";
+}
+
+function macroScelto(){
+    macroBlocchiScelto = true;
+    calcolaGrammiBlocchi();
+}
+
+/* Propone il macronutriente principale dell'alimento, finché non lo scegli tu */
+function suggerisciMacroBlocchi(){
+    if(macroBlocchiScelto) return;
+
+    const p = numeroRapido("rapidoP"), c = numeroRapido("rapidoC"), g = numeroRapido("rapidoG");
+    const categoria = calcolaCategoria(p, c, g);
+    let campo = "proteine";
+
+    if(categoria === "Proteine") campo = "proteine";
+    else if(categoria === "Carboidrati") campo = "carbo";
+    else if(categoria === "Grassi") campo = "grassi";
+    else if(c >= p && c >= g) campo = "carbo";
+    else if(g > p) campo = "grassi";
+
+    el("rapidoMacro").value = campo;
+}
+
+function calcolaGrammiBlocchi(){
+    if(el("pannelloBlocchi").style.display !== "block") return;
+
+    const risultato = el("risultatoBlocchi");
+    const valori = { proteine: numeroRapido("rapidoP"), carbo: numeroRapido("rapidoC"), grassi: numeroRapido("rapidoG") };
+    const blocchi = numeroRapido("rapidoBlocchi");
+    const campo = el("rapidoMacro").value;
+    const nomeAlimento = el("rapidoNome").value.trim();
+
+    if(valori.proteine + valori.carbo + valori.grassi <= 0){
+        risultato.innerHTML = "Inserisci o scansiona i valori dell'alimento.";
+        return;
+    }
+    if(blocchi <= 0){
+        risultato.innerHTML = "Inserisci quanti blocchi vuoi.";
+        return;
+    }
+    if(valori[campo] <= 0){
+        risultato.innerHTML = "Questo alimento non contiene " + NOME_MACRO[campo] + ": scegli un altro macronutriente.";
+        return;
     }
 
-    return {
-        p: primo("prote\\w*"),
-        c: primo("(?:carboidrati|glucidi|carbohydrate\\w*)"),
-        g: primo("(?<!acidi )(?<!di cui )(?:grassi|lipidi|fat)")
-    };
-}
+    const grammi = blocchi * UNITA_BLOCCO[campo] / (valori[campo] / 100);
+    const mostrati = grammi < 10 ? grammi.toFixed(1) : String(Math.round(grammi));
 
-function scegliFotoEtichetta(){
-    el("fotoEtichetta").click();
-}
+    const bp = (valori.proteine * grammi / 100) / 7;
+    const bc = (valori.carbo * grammi / 100) / 9;
+    const bg = (valori.grassi * grammi / 100) / 3;
 
-function caricaTesseract(){
-    return new Promise(function(ok, ko){
-        if(window.Tesseract) return ok(window.Tesseract);
-        const s = document.createElement("script");
-        s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
-        s.onload = function(){ ok(window.Tesseract); };
-        s.onerror = function(){ ko(new Error("download")); };
-        document.head.appendChild(s);
-    });
-}
-
-function ridimensionaImmagine(file, massimo){
-    return new Promise(function(ok, ko){
-        const img = new Image();
-        const url = URL.createObjectURL(file);
-        img.onload = function(){
-            const f = Math.min(1, massimo / Math.max(img.width, img.height));
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.round(img.width * f);
-            canvas.height = Math.round(img.height * f);
-            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-            URL.revokeObjectURL(url);
-            canvas.toBlob(function(b){ b ? ok(b) : ko(new Error("immagine")); }, "image/jpeg", 0.9);
-        };
-        img.onerror = function(){
-            URL.revokeObjectURL(url);
-            ko(new Error("immagine"));
-        };
-        img.src = url;
-    });
-}
-
-/* Foto della tabella nutrizionale: lettura del testo (OCR) direttamente sul telefono */
-async function leggiEtichetta(evento){
-    const file = evento.target.files && evento.target.files[0];
-    evento.target.value = "";
-    if(!file) return;
-
-    try{
-        statoScansione("Preparo la foto…");
-        const immagine = await ridimensionaImmagine(file, 1800);
-
-        statoScansione("Scarico il lettore di testo (solo la prima volta, serve internet)…");
-        const T = await caricaTesseract();
-
-        const risultato = await T.recognize(immagine, "ita+eng", {
-            logger: function(m){
-                if(m && m.status === "recognizing text"){
-                    statoScansione("Leggo il testo… " + Math.round((m.progress || 0) * 100) + "%");
-                }
-            }
-        });
-
-        const v = estraiValoriNutrizionali(risultato.data.text);
-        if(v.p === null && v.c === null && v.g === null){
-            statoScansione("Non ho trovato i valori. Riprova con una foto dritta, ben illuminata e con la tabella ben visibile, oppure inseriscili a mano.");
-            return;
-        }
-
-        applicaValoriScansione("", v);
-        const letti = [];
-        if(v.p !== null) letti.push("proteine " + testoValore(v.p));
-        if(v.c !== null) letti.push("carboidrati " + testoValore(v.c));
-        if(v.g !== null) letti.push("grassi " + testoValore(v.g));
-        statoScansione("Letto: " + letti.join(", ") + " (per 100 g). Controlla sempre i valori con l'etichetta: la lettura può sbagliare.");
-    }catch(e){
-        statoScansione("Non sono riuscito a leggere la foto (serve internet per scaricare il lettore la prima volta). Riprova oppure inserisci i valori a mano.");
-    }
+    risultato.innerHTML =
+        "<div class='evidenza'>" + (nomeAlimento ? esc(nomeAlimento) + "<br>" : "") + mostrati + " g</div>" +
+        "<br>Per <b>" + testoValore(blocchi) + "</b> blocchi di " + NOME_MACRO[campo] + "." +
+        "<br>In questa quantità: P " + bp.toFixed(2) + " | C " + bc.toFixed(2) + " | G " + bg.toFixed(2) + " blocchi";
 }
 
 /* Azzera il pasto corrente e la selezione dell'alimento, filtri compresi */
