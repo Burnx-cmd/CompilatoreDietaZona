@@ -300,6 +300,30 @@ margin-right:0;
     grid-template-columns:repeat(2, minmax(0, 1fr));
     gap:0 12px;
 }
+.riga-filtri{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:8px;
+}
+.riga-filtri select{
+    padding:8px 4px;
+    font-size:14px;
+}
+.riga-filtri label{
+    font-size:13px;
+}
+.accordion-header h3,
+.titolo-sezione{
+    margin:0;
+    font-size:18px;
+    color:#f8fafc;
+}
+.titolo-sezione{
+    background:#334155;
+    padding:15px;
+    border-radius:12px;
+    margin:18px 0 10px;
+}
 .nota{
     font-size:13px;
     color:#94a3b8;
@@ -314,48 +338,6 @@ margin-right:0;
 <h1>🥗 Calcolatore Dieta a Zona</h1>
 
 <button type="button" id="btnInstalla" class="calcola" style="display:none;width:100%;margin:0 0 15px" onclick="installaApp()">📲 Installa l'app sul telefono</button>
-
-<div class="card">
-
-<div class="accordion-header" onclick="toggleCalcoloRapido()">
-    <h3 style="margin:0;">⚡ Calcolo rapido blocchi</h3>
-    <span id="iconaRapido">▼</span>
-</div>
-
-<div id="contenitoreRapido">
-
-    <label for="rapidoNome">Nome alimento (facoltativo)</label>
-    <input type="text" id="rapidoNome" maxlength="120" placeholder="Es. Barretta proteica" autocomplete="off">
-
-    <div class="griglia-rapida">
-        <div>
-            <label for="rapidoP">Proteine per 100 g</label>
-            <input type="text" id="rapidoP" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
-        </div>
-        <div>
-            <label for="rapidoC">Carboidrati per 100 g</label>
-            <input type="text" id="rapidoC" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
-        </div>
-        <div>
-            <label for="rapidoG">Grassi per 100 g</label>
-            <input type="text" id="rapidoG" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
-        </div>
-        <div>
-            <label for="rapidoQ">Quantità (g)</label>
-            <input type="text" id="rapidoQ" inputmode="decimal" value="100" autocomplete="off" oninput="calcolaRapido()">
-        </div>
-    </div>
-
-    <div id="risultatoRapido" class="pasto" style="margin-top:15px"></div>
-
-    <div class="azioni-alimento">
-        <button type="button" class="salva" onclick="salvaRapidoComeAlimento()">💾 Salva come alimento</button>
-        <button type="button" class="elimina" onclick="azzeraRapido()">🧹 Azzera</button>
-    </div>
-
-</div>
-
-</div>
 
 <div class="card">
 
@@ -377,33 +359,40 @@ margin-right:0;
 <button id="btnTorna" class="backup" style="display:none;" onclick="tornaAlDatabase()">↩️ Torna al Database</button>
 </div>
 
-<label for="categoriaFiltro">Categoria</label>
-<select id="categoriaFiltro" onchange="filtraAlimentiCompleto()">
-    <option value="Tutti">Tutti</option>
-    <option value="Proteine">Proteine</option>
-    <option value="Carboidrati">Carboidrati</option>
-    <option value="Grassi">Grassi</option>
-    <option value="Misto">Misti (più macronutrienti)</option>
-</select>
-
-<label for="filtroQualita">Valutazione Zona</label>
-<select id="filtroQualita" onchange="filtraAlimentiCompleto()">
-    <option value="Tutte">Tutte</option>
-    <option value="Favorevole">✅ Favorevole</option>
-    <option value="Moderazione">⚠️ Moderazione</option>
-    <option value="Da evitare">❌ Da evitare</option>
-</select>
-
-<label for="filtroPreferiti">Mostra</label>
-<select id="filtroPreferiti" onchange="filtraAlimentiCompleto()">
-    <option value="Tutti">Tutti gli alimenti</option>
-    <option value="Preferiti">⭐ Solo preferiti</option>
-</select>
-
 <div id="areaDatabase">
     <label for="ricercaAlimento">Cerca Alimento</label>
     <input type="text" id="ricercaAlimento" placeholder="Es. Yogurt, Banana, Riso..." onkeyup="filtraAlimentiCompleto()">
-    <select id="alimentoSelezionato" onchange="selezionaAlimento()"></select>
+
+    <div class="riga-filtri">
+        <div>
+            <label for="categoriaFiltro">Categoria</label>
+            <select id="categoriaFiltro" onchange="filtraAlimentiCompleto()">
+                <option value="Tutti">Tutte</option>
+                <option value="Proteine">Proteine</option>
+                <option value="Carboidrati">Carboidrati</option>
+                <option value="Grassi">Grassi</option>
+                <option value="Misto">Misti</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtroQualita">Valutazione</label>
+            <select id="filtroQualita" onchange="filtraAlimentiCompleto()">
+                <option value="Tutte">Tutte</option>
+                <option value="Favorevole">✅ Favorevole</option>
+                <option value="Moderazione">⚠️ Moderazione</option>
+                <option value="Da evitare">❌ Da evitare</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtroPreferiti">Mostra</label>
+            <select id="filtroPreferiti" onchange="filtraAlimentiCompleto()">
+                <option value="Tutti">Tutti</option>
+                <option value="Preferiti">⭐ Preferiti</option>
+            </select>
+        </div>
+    </div>
+
+    <select id="alimentoSelezionato" onchange="selezionaAlimento()" style="margin-top:12px"></select>
 </div>
 
 <div id="areaManuale" style="display:none;">
@@ -419,12 +408,26 @@ margin-right:0;
 <label for="grassi">Grassi per 100g</label>
 <input type="number" id="grassi" step="0.01" min="0" oninput="calcola()">
 
-<label for="qualitaManuale">Valutazione Zona</label>
-<select id="qualitaManuale">
-    <option value="Favorevole">✅ Favorevole</option>
-    <option value="Moderazione" selected>⚠️ Moderazione</option>
-    <option value="Da evitare">❌ Da evitare</option>
-</select>
+<div class="riga-filtri" style="grid-template-columns:repeat(2, minmax(0, 1fr));">
+    <div>
+        <label for="categoriaManuale">Categoria</label>
+        <select id="categoriaManuale" onchange="categoriaScelta()">
+            <option value="Proteine">Proteine</option>
+            <option value="Carboidrati">Carboidrati</option>
+            <option value="Grassi">Grassi</option>
+            <option value="Misto" selected>Misti</option>
+        </select>
+    </div>
+    <div>
+        <label for="qualitaManuale">Valutazione</label>
+        <select id="qualitaManuale">
+            <option value="Favorevole">✅ Favorevole</option>
+            <option value="Moderazione" selected>⚠️ Moderazione</option>
+            <option value="Da evitare">❌ Da evitare</option>
+        </select>
+    </div>
+</div>
+<div class="nota">La categoria si propone da sola in base ai valori inseriti, ma puoi cambiarla.</div>
 
 <button class="backup" onclick="salvaAlimentoPersonalizzato()">⭐ Salva nel Database</button>
 </div>
@@ -435,6 +438,7 @@ margin-right:0;
 <button class="calcola" onclick="calcola()">Calcola</button>
 <button class="calcola" onclick="aggiungiAlPasto()">➕ Aggiungi al Pasto</button>
 <button class="salva" onclick="salvaPasto()">💾 Salva Pasto</button>
+<button class="elimina" onclick="azzeraTutto()">🧹 Azzera</button>
 
 <hr>
 
@@ -485,7 +489,7 @@ margin-right:0;
 
 </div>
 
-<h3>🍽️ Pasto Corrente</h3>
+<h3 class="titolo-sezione">🍽️ Pasto Corrente</h3>
 <div id="pastoCorrente">Nessun alimento aggiunto</div>
 
 <div id="suggerimentiPasto" class="pasto" style="display:none;margin-top:15px"></div>
@@ -499,8 +503,73 @@ margin-right:0;
 
 <div class="card">
 
+<div class="accordion-header" onclick="toggleCalcoloRapido()">
+    <h3 style="margin:0;">⚡ Calcolo rapido blocchi</h3>
+    <span id="iconaRapido">►</span>
+</div>
+
+<div id="contenitoreRapido" style="display:none;">
+
+    <label for="rapidoNome">Nome alimento (facoltativo)</label>
+    <input type="text" id="rapidoNome" maxlength="120" placeholder="Es. Barretta proteica" autocomplete="off">
+
+    <div class="griglia-rapida">
+        <div>
+            <label for="rapidoP">Proteine per 100 g</label>
+            <input type="text" id="rapidoP" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+        <div>
+            <label for="rapidoC">Carboidrati per 100 g</label>
+            <input type="text" id="rapidoC" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+        <div>
+            <label for="rapidoG">Grassi per 100 g</label>
+            <input type="text" id="rapidoG" inputmode="decimal" placeholder="0" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+        <div>
+            <label for="rapidoQ">Quantità (g)</label>
+            <input type="text" id="rapidoQ" inputmode="decimal" value="100" autocomplete="off" oninput="calcolaRapido()">
+        </div>
+    </div>
+
+    <div id="risultatoRapido" class="pasto" style="margin-top:15px"></div>
+
+    <div class="azioni-alimento">
+        <button type="button" class="salva" onclick="salvaRapidoComeAlimento()">💾 Salva come alimento</button>
+        <button type="button" class="calcola" onclick="apriScansione()">📷 Scansiona</button>
+        <button type="button" class="elimina" onclick="azzeraRapido()">🧹 Azzera</button>
+    </div>
+
+    <div id="pannelloScansione" class="pasto" style="display:none;margin-top:12px">
+        <b>📷 Scansiona un alimento</b>
+
+        <div class="azioni-alimento">
+            <button type="button" class="calcola" onclick="avviaScanCodice()">🔢 Codice a barre</button>
+            <button type="button" class="backup" onclick="scegliFotoEtichetta()">🏷️ Valori nutrizionali</button>
+        </div>
+
+        <input type="file" id="fotoEtichetta" accept="image/*" capture="environment" style="display:none" onchange="leggiEtichetta(event)">
+        <video id="videoScansione" playsinline muted style="display:none;width:100%;border-radius:10px;margin-top:10px;background:#000"></video>
+
+        <label for="codiceManuale">Oppure scrivi il codice a barre</label>
+        <div class="azioni-alimento">
+            <input type="text" id="codiceManuale" inputmode="numeric" placeholder="Es. 8001234567890" autocomplete="off" style="flex:2 1 170px;width:auto;margin-top:10px">
+            <button type="button" class="salva" onclick="cercaCodiceManuale()">🔍 Cerca</button>
+        </div>
+
+        <div id="statoScansione" class="nota" style="margin-top:10px"></div>
+
+        <button type="button" class="elimina" onclick="chiudiScansione()">✖ Chiudi</button>
+    </div>
+
+</div>
+
+</div>
+
+<div class="card">
+
 <div class="accordion-header" onclick="togglePastiPreferiti()">
-    <h2 style="margin:0;">⭐ Pasti Preferiti</h2>
+    <h3 style="margin:0;">⭐ Pasti Preferiti</h3>
     <span id="iconaPreferiti">►</span>
 </div>
 
@@ -513,7 +582,7 @@ margin-right:0;
 <div class="card">
 
 <div class="accordion-header" onclick="togglePastiSalvati()">
-    <h2 style="margin:0;">📋 Pasti Salvati</h2>
+    <h3 style="margin:0;">📋 Pasti Salvati</h3>
     <span id="iconaPasti">►</span>
 </div>
 
@@ -529,10 +598,10 @@ margin-right:0;
 
 <div class="card">
 
-<h2>Totali Giornalieri</h2>
+<h3 class="titolo-sezione" style="margin-top:0">📊 Totali Giornalieri</h3>
 
 <div style="margin-top:20px">
-<h3>Alimento Selezionato</h3>
+<h3 class="titolo-sezione">🍎 Alimento Selezionato</h3>
 <div id="infoAlimento">Nessun alimento selezionato</div>
 </div>
 
@@ -544,7 +613,7 @@ margin-right:0;
 
 <hr>
 
-<h2>🎯 Obiettivo Giornaliero Zona</h2>
+<h3 class="titolo-sezione">🎯 Obiettivo Giornaliero Zona</h3>
 
 <label for="obiettivoBlocchi">Blocchi Obiettivo</label>
 <input type="number" id="obiettivoBlocchi" value="12" oninput="aggiornaObiettivo()">
@@ -1144,6 +1213,8 @@ const CHIAVE_PREF_PASTI = "pastiPreferiti";
 const TIPI_PASTO = ["Colazione", "Pranzo", "Cena", "Spuntino"];
 
 const QUALITA_VALIDE = ["Favorevole", "Moderazione", "Da evitare"];
+const CATEGORIE_VALIDE = ["Proteine", "Carboidrati", "Grassi", "Misto"];
+let categoriaManualeScelta = false;
 const collatore = new Intl.Collator("it", { sensitivity: "base", numeric: true });
 
 /* Protegge ogni testo inserito dall'utente prima di metterlo in innerHTML */
@@ -1264,7 +1335,7 @@ function sanificaAlimento(a){
         proteine: p,
         carbo: c,
         grassi: g,
-        categoria: calcolaCategoria(p, c, g),
+        categoria: CATEGORIE_VALIDE.includes(a.categoria) ? a.categoria : calcolaCategoria(p, c, g),
         qualita: normalizzaQualita(a.qualita),
         fonte: "PERSONALIZZATO"
     };
@@ -1548,6 +1619,7 @@ function calcolaRapido(){
 
 /* Svuota il calcolo rapido per inserire un nuovo alimento */
 function azzeraRapido(){
+    chiudiScansione();
     el("rapidoNome").value = "";
     el("rapidoP").value = "";
     el("rapidoC").value = "";
@@ -1555,6 +1627,255 @@ function azzeraRapido(){
     el("rapidoQ").value = "100";
     calcolaRapido();
     el("rapidoNome").focus();
+}
+
+/* =====================================================================
+   SCANSIONE: CODICE A BARRE E VALORI NUTRIZIONALI
+   ===================================================================== */
+
+let flussoCamera = null;
+let timerScansione = null;
+
+function statoScansione(testo){
+    el("statoScansione").innerText = testo;
+}
+
+function apriScansione(){
+    el("pannelloScansione").style.display = "block";
+    statoScansione("Scegli come scansionare l'alimento.");
+}
+
+function fermaCamera(){
+    if(timerScansione){
+        clearTimeout(timerScansione);
+        timerScansione = null;
+    }
+    if(flussoCamera){
+        flussoCamera.getTracks().forEach(function(t){ t.stop(); });
+        flussoCamera = null;
+    }
+    const video = el("videoScansione");
+    if(video.pause) video.pause();
+    video.srcObject = null;
+    video.style.display = "none";
+}
+
+function chiudiScansione(){
+    fermaCamera();
+    el("pannelloScansione").style.display = "none";
+}
+
+/* Lettura del codice a barre con la fotocamera (Chrome su Android) */
+async function avviaScanCodice(){
+    fermaCamera();
+
+    if(!("BarcodeDetector" in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        statoScansione("Questo browser non legge i codici a barre con la fotocamera: scrivi qui sotto le cifre stampate sotto le barre.");
+        el("codiceManuale").focus();
+        return;
+    }
+
+    try{
+        const rilevatore = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
+        flussoCamera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+
+        const video = el("videoScansione");
+        video.srcObject = flussoCamera;
+        video.style.display = "block";
+        await video.play();
+        statoScansione("Inquadra il codice a barre…");
+
+        const ciclo = async function(){
+            if(!flussoCamera) return;
+            try{
+                const trovati = await rilevatore.detect(video);
+                if(trovati.length > 0 && trovati[0].rawValue){
+                    const codice = trovati[0].rawValue;
+                    fermaCamera();
+                    cercaCodice(codice);
+                    return;
+                }
+            }catch(e){ /* nessun codice in questo fotogramma */ }
+            timerScansione = setTimeout(ciclo, 300);
+        };
+        ciclo();
+    }catch(e){
+        fermaCamera();
+        const motivo = (e && e.name === "NotAllowedError") ? "permesso alla fotocamera negato" : "fotocamera non disponibile";
+        statoScansione("Impossibile usare la fotocamera (" + motivo + "). Puoi scrivere il codice a mano qui sotto.");
+        el("codiceManuale").focus();
+    }
+}
+
+function cercaCodiceManuale(){
+    const codice = el("codiceManuale").value.replace(/\D/g, "");
+    if(codice.length < 8 || codice.length > 14){
+        statoScansione("Il codice a barre deve avere da 8 a 14 cifre.");
+        return;
+    }
+    cercaCodice(codice);
+}
+
+function valoreNutriente(n){
+    const x = parseFloat(n);
+    return (Number.isFinite(x) && x >= 0 && x <= 100) ? x : null;
+}
+
+function testoValore(n){
+    return String(Math.round(n * 100) / 100).replace(".", ",");
+}
+
+/* Cerca il prodotto su Open Food Facts (database pubblico, serve internet) */
+async function cercaCodice(codice){
+    statoScansione("Cerco il prodotto " + codice + "…");
+
+    try{
+        const risposta = await fetch("https://world.openfoodfacts.org/api/v2/product/" + encodeURIComponent(codice) +
+            ".json?fields=product_name,brands,nutriments");
+        if(!risposta.ok) throw new Error("HTTP " + risposta.status);
+
+        const dati = await risposta.json();
+        if(!dati || dati.status !== 1 || !dati.product){
+            statoScansione("Prodotto " + codice + " non trovato su Open Food Facts. Prova con la foto dei valori nutrizionali.");
+            return;
+        }
+
+        const n = dati.product.nutriments || {};
+        const valori = {
+            p: valoreNutriente(n.proteins_100g),
+            c: valoreNutriente(n.carbohydrates_100g),
+            g: valoreNutriente(n.fat_100g)
+        };
+
+        const nome = [dati.product.brands ? String(dati.product.brands).split(",")[0].trim() : "", dati.product.product_name || ""]
+            .filter(Boolean).join(" - ").slice(0, 120);
+
+        if(valori.p === null && valori.c === null && valori.g === null){
+            statoScansione("Prodotto trovato (" + (nome || codice) + ") ma senza valori nutrizionali. Prova con la foto dell'etichetta.");
+            return;
+        }
+
+        applicaValoriScansione(nome, valori);
+        statoScansione("✅ Trovato: " + (nome || codice) + ". Valori per 100 g da Open Food Facts: controllali con l'etichetta.");
+    }catch(e){
+        statoScansione("Non riesco a contattare Open Food Facts (serve la connessione a internet). Riprova, oppure usa la foto dei valori nutrizionali.");
+    }
+}
+
+function applicaValoriScansione(nome, valori){
+    if(nome) el("rapidoNome").value = nome;
+    if(valori.p !== null) el("rapidoP").value = testoValore(valori.p);
+    if(valori.c !== null) el("rapidoC").value = testoValore(valori.c);
+    if(valori.g !== null) el("rapidoG").value = testoValore(valori.g);
+    calcolaRapido();
+}
+
+/* Cerca proteine, carboidrati e grassi nel testo letto da una tabella nutrizionale.
+   Si usa il primo numero dopo ogni voce, di solito la colonna "per 100 g". */
+function estraiValoriNutrizionali(testo){
+    const t = String(testo || "").toLowerCase().replace(/\s+/g, " ").replace(/,/g, ".");
+    const NUM = "(\\d{1,3}(?:\\.\\d+)?)";
+
+    function primo(inizio){
+        const conUnita = t.match(new RegExp(inizio + "[^\\d]{0,20}?" + NUM + "\\s*g\\b"));
+        const senzaUnita = t.match(new RegExp(inizio + "[^\\d]{0,20}?" + NUM));
+        const m = conUnita || senzaUnita;
+        return m ? valoreNutriente(m[1]) : null;
+    }
+
+    return {
+        p: primo("prote\\w*"),
+        c: primo("(?:carboidrati|glucidi|carbohydrate\\w*)"),
+        g: primo("(?<!acidi )(?<!di cui )(?:grassi|lipidi|fat)")
+    };
+}
+
+function scegliFotoEtichetta(){
+    el("fotoEtichetta").click();
+}
+
+function caricaTesseract(){
+    return new Promise(function(ok, ko){
+        if(window.Tesseract) return ok(window.Tesseract);
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+        s.onload = function(){ ok(window.Tesseract); };
+        s.onerror = function(){ ko(new Error("download")); };
+        document.head.appendChild(s);
+    });
+}
+
+function ridimensionaImmagine(file, massimo){
+    return new Promise(function(ok, ko){
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = function(){
+            const f = Math.min(1, massimo / Math.max(img.width, img.height));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * f);
+            canvas.height = Math.round(img.height * f);
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(url);
+            canvas.toBlob(function(b){ b ? ok(b) : ko(new Error("immagine")); }, "image/jpeg", 0.9);
+        };
+        img.onerror = function(){
+            URL.revokeObjectURL(url);
+            ko(new Error("immagine"));
+        };
+        img.src = url;
+    });
+}
+
+/* Foto della tabella nutrizionale: lettura del testo (OCR) direttamente sul telefono */
+async function leggiEtichetta(evento){
+    const file = evento.target.files && evento.target.files[0];
+    evento.target.value = "";
+    if(!file) return;
+
+    try{
+        statoScansione("Preparo la foto…");
+        const immagine = await ridimensionaImmagine(file, 1800);
+
+        statoScansione("Scarico il lettore di testo (solo la prima volta, serve internet)…");
+        const T = await caricaTesseract();
+
+        const risultato = await T.recognize(immagine, "ita+eng", {
+            logger: function(m){
+                if(m && m.status === "recognizing text"){
+                    statoScansione("Leggo il testo… " + Math.round((m.progress || 0) * 100) + "%");
+                }
+            }
+        });
+
+        const v = estraiValoriNutrizionali(risultato.data.text);
+        if(v.p === null && v.c === null && v.g === null){
+            statoScansione("Non ho trovato i valori. Riprova con una foto dritta, ben illuminata e con la tabella ben visibile, oppure inseriscili a mano.");
+            return;
+        }
+
+        applicaValoriScansione("", v);
+        const letti = [];
+        if(v.p !== null) letti.push("proteine " + testoValore(v.p));
+        if(v.c !== null) letti.push("carboidrati " + testoValore(v.c));
+        if(v.g !== null) letti.push("grassi " + testoValore(v.g));
+        statoScansione("Letto: " + letti.join(", ") + " (per 100 g). Controlla sempre i valori con l'etichetta: la lettura può sbagliare.");
+    }catch(e){
+        statoScansione("Non sono riuscito a leggere la foto (serve internet per scaricare il lettore la prima volta). Riprova oppure inserisci i valori a mano.");
+    }
+}
+
+/* Azzera il pasto corrente e la selezione dell'alimento, filtri compresi */
+function azzeraTutto(){
+    if(alimentiPasto.length > 0 && !confirm("Azzerare il pasto corrente e la selezione?")) return;
+
+    svuotaPasto();
+    tornaAlDatabase();
+
+    el("ricercaAlimento").value = "";
+    el("categoriaFiltro").value = "Tutti";
+    el("filtroQualita").value = "Tutte";
+    el("filtroPreferiti").value = "Tutti";
+    filtraAlimentiCompleto();
 }
 
 /* Porta i dati del calcolo rapido nel modulo "Nuovo alimento" */
@@ -1620,7 +1941,22 @@ function selezionaAlimento(){
     mostraAlimento(a);
 }
 
+/* Mentre inserisci i valori di un nuovo alimento propone la categoria, finché non la scegli tu */
+function categoriaScelta(){
+    categoriaManualeScelta = true;
+}
+
+function suggerisciCategoria(){
+    if(el("areaManuale").style.display !== "block" || categoriaManualeScelta) return;
+    el("categoriaManuale").value = calcolaCategoria(
+        parseFloat(el("proteine").value) || 0,
+        parseFloat(el("carbo").value) || 0,
+        parseFloat(el("grassi").value) || 0
+    );
+}
+
 function calcola(){
+    suggerisciCategoria();
     const p = parseFloat(el("proteine").value) || 0;
     const c = parseFloat(el("carbo").value) || 0;
     const g = parseFloat(el("grassi").value) || 0;
@@ -2384,6 +2720,7 @@ function mostraFormAlimento(){
 
 function apriNuovoAlimento(){
     alimentoInModifica = null;
+    categoriaManualeScelta = false;
     mostraFormAlimento();
 
     el("alimentoManuale").value = "";
@@ -2394,6 +2731,7 @@ function apriNuovoAlimento(){
     el("carbo").value = "";
     el("grassi").value = "";
     el("qualitaManuale").value = "Moderazione";
+    el("categoriaManuale").value = "Misto";
 
     aggiornaStatoBottoneModifica();
     calcola();
@@ -2409,6 +2747,8 @@ function apriFormModifica(a){
     el("carbo").value = a.carbo;
     el("grassi").value = a.grassi;
     el("qualitaManuale").value = a.qualita;
+    el("categoriaManuale").value = a.categoria;
+    categoriaManualeScelta = true;
 
     calcola();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2462,7 +2802,8 @@ function salvaAlimentoPersonalizzato(){
         proteine: el("proteine").value,
         carbo: el("carbo").value,
         grassi: el("grassi").value,
-        qualita: el("qualitaManuale").value
+        qualita: el("qualitaManuale").value,
+        categoria: el("categoriaManuale").value
     });
 
     if(!nuovo){
