@@ -324,6 +324,21 @@ margin-right:0;
     border-radius:12px;
     margin:18px 0 10px;
 }
+.chips-blocchi{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:8px;
+}
+.chips-blocchi button{
+    flex:1 1 0;
+    width:auto;
+    min-width:44px;
+    margin:0;
+    padding:10px 0;
+    background:#475569;
+    color:#f8fafc;
+}
 .nota{
     font-size:13px;
     color:#94a3b8;
@@ -564,19 +579,14 @@ margin-right:0;
     <div id="pannelloBlocchi" class="pasto" style="display:none;margin-top:12px">
         <b>🧮 Calcolo blocchi</b>
 
-        <div class="griglia-rapida">
-            <div>
-                <label for="rapidoBlocchi">Quanti blocchi?</label>
-                <input type="text" id="rapidoBlocchi" inputmode="decimal" value="1" autocomplete="off" oninput="calcolaGrammiBlocchi()">
-            </div>
-            <div>
-                <label for="rapidoMacro">Blocchi di</label>
-                <select id="rapidoMacro" onchange="macroScelto()">
-                    <option value="proteine">Proteine</option>
-                    <option value="carbo">Carboidrati</option>
-                    <option value="grassi">Grassi</option>
-                </select>
-            </div>
+        <label for="rapidoBlocchi">Quanti blocchi?</label>
+        <input type="text" id="rapidoBlocchi" inputmode="decimal" value="1" autocomplete="off" oninput="calcolaGrammiBlocchi()">
+        <div class="chips-blocchi">
+            <button type="button" onclick="impostaBlocchi(1)">1</button>
+            <button type="button" onclick="impostaBlocchi(2)">2</button>
+            <button type="button" onclick="impostaBlocchi(3)">3</button>
+            <button type="button" onclick="impostaBlocchi(4)">4</button>
+            <button type="button" onclick="impostaBlocchi(5)">5</button>
         </div>
 
         <div id="risultatoBlocchi" style="margin-top:12px"></div>
@@ -1639,7 +1649,6 @@ function calcolaRapido(){
         avviso;
 
     if(el("pannelloBlocchi").style.display === "block"){
-        suggerisciMacroBlocchi();
         calcolaGrammiBlocchi();
     }
 }
@@ -1803,12 +1812,9 @@ function applicaValoriScansione(nome, valori){
 
 const UNITA_BLOCCO = { proteine: 7, carbo: 9, grassi: 3 };
 const NOME_MACRO = { proteine: "proteine", carbo: "carboidrati", grassi: "grassi" };
-let macroBlocchiScelto = false;
 
 function apriCalcoloBlocchi(){
     el("pannelloBlocchi").style.display = "block";
-    macroBlocchiScelto = false;
-    suggerisciMacroBlocchi();
     calcolaGrammiBlocchi();
     if(el("pannelloBlocchi").scrollIntoView) el("pannelloBlocchi").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
@@ -1817,38 +1823,31 @@ function chiudiCalcoloBlocchi(){
     el("pannelloBlocchi").style.display = "none";
 }
 
-function macroScelto(){
-    macroBlocchiScelto = true;
+function impostaBlocchi(n){
+    el("rapidoBlocchi").value = String(n);
     calcolaGrammiBlocchi();
 }
 
-/* Propone il macronutriente principale dell'alimento, finché non lo scegli tu */
-function suggerisciMacroBlocchi(){
-    if(macroBlocchiScelto) return;
-
-    const p = numeroRapido("rapidoP"), c = numeroRapido("rapidoC"), g = numeroRapido("rapidoG");
+/* Macronutriente principale dell'alimento: è quello su cui si contano i blocchi */
+function macroPrincipale(p, c, g){
     const categoria = calcolaCategoria(p, c, g);
-    let campo = "proteine";
-
-    if(categoria === "Proteine") campo = "proteine";
-    else if(categoria === "Carboidrati") campo = "carbo";
-    else if(categoria === "Grassi") campo = "grassi";
-    else if(c >= p && c >= g) campo = "carbo";
-    else if(g > p) campo = "grassi";
-
-    el("rapidoMacro").value = campo;
+    if(categoria === "Proteine") return "proteine";
+    if(categoria === "Carboidrati") return "carbo";
+    if(categoria === "Grassi") return "grassi";
+    if(c >= p && c >= g) return "carbo";
+    if(g > p) return "grassi";
+    return "proteine";
 }
 
 function calcolaGrammiBlocchi(){
     if(el("pannelloBlocchi").style.display !== "block") return;
 
     const risultato = el("risultatoBlocchi");
-    const valori = { proteine: numeroRapido("rapidoP"), carbo: numeroRapido("rapidoC"), grassi: numeroRapido("rapidoG") };
+    const p = numeroRapido("rapidoP"), c = numeroRapido("rapidoC"), g = numeroRapido("rapidoG");
     const blocchi = numeroRapido("rapidoBlocchi");
-    const campo = el("rapidoMacro").value;
     const nomeAlimento = el("rapidoNome").value.trim();
 
-    if(valori.proteine + valori.carbo + valori.grassi <= 0){
+    if(p + c + g <= 0){
         risultato.innerHTML = "Inserisci o scansiona i valori dell'alimento.";
         return;
     }
@@ -1856,22 +1855,24 @@ function calcolaGrammiBlocchi(){
         risultato.innerHTML = "Inserisci quanti blocchi vuoi.";
         return;
     }
-    if(valori[campo] <= 0){
-        risultato.innerHTML = "Questo alimento non contiene " + NOME_MACRO[campo] + ": scegli un altro macronutriente.";
-        return;
-    }
 
+    const valori = { proteine: p, carbo: c, grassi: g };
+    const campo = macroPrincipale(p, c, g);
+
+    /* Grammi di prodotto che danno i blocchi richiesti del macronutriente principale */
     const grammi = blocchi * UNITA_BLOCCO[campo] / (valori[campo] / 100);
     const mostrati = grammi < 10 ? grammi.toFixed(1) : String(Math.round(grammi));
 
-    const bp = (valori.proteine * grammi / 100) / 7;
-    const bc = (valori.carbo * grammi / 100) / 9;
-    const bg = (valori.grassi * grammi / 100) / 3;
+    const gp = p * grammi / 100, gc = c * grammi / 100, gg = g * grammi / 100;
 
     risultato.innerHTML =
         "<div class='evidenza'>" + (nomeAlimento ? esc(nomeAlimento) + "<br>" : "") + mostrati + " g</div>" +
-        "<br>Per <b>" + testoValore(blocchi) + "</b> blocchi di " + NOME_MACRO[campo] + "." +
-        "<br>In questa quantità: P " + bp.toFixed(2) + " | C " + bc.toFixed(2) + " | G " + bg.toFixed(2) + " blocchi";
+        "<br>Quantità per <b>" + testoValore(blocchi) + "</b> " + (blocchi === 1 ? "blocco" : "blocchi") +
+        " (macronutriente principale: " + NOME_MACRO[campo] + ").<br><br>" +
+        "<b>Valori in questa quantità</b><br>" +
+        "Proteine: " + gp.toFixed(1) + " g (" + (gp / 7).toFixed(2) + " blocchi)<br>" +
+        "Carboidrati: " + gc.toFixed(1) + " g (" + (gc / 9).toFixed(2) + " blocchi)<br>" +
+        "Grassi: " + gg.toFixed(1) + " g (" + (gg / 3).toFixed(2) + " blocchi)";
 }
 
 /* Azzera il pasto corrente e la selezione dell'alimento, filtri compresi */

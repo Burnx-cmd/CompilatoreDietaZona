@@ -2,7 +2,7 @@
    Strategia "prima la rete, poi la cache": quando sei online ricevi sempre la versione
    più recente, quando sei offline usi l'ultima copia salvata.
    Per forzare un aggiornamento cambia il numero di versione qui sotto. */
-const VERSIONE = "dieta-zona-v4";
+const VERSIONE = "dieta-zona-v5";
 const FILE_BASE = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", function(evento){
