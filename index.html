@@ -340,6 +340,50 @@ margin-right:0;
     background:#475569;
     color:#f8fafc;
 }
+.gruppo-pref{
+    font-size:13px;
+    font-weight:bold;
+    color:#94a3b8;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin:14px 0 6px;
+}
+.gruppo-pref:first-child{
+    margin-top:0;
+}
+.voce-pref{
+    background:#334155;
+    border-radius:10px;
+    margin-bottom:6px;
+    overflow:hidden;
+}
+.voce-pref summary{
+    padding:12px 14px;
+    cursor:pointer;
+    font-weight:bold;
+    list-style:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+.voce-pref summary::-webkit-details-marker{
+    display:none;
+}
+.voce-pref summary::after{
+    content:"▾";
+    color:#94a3b8;
+    transition:transform .2s ease;
+}
+.voce-pref[open] summary::after{
+    transform:rotate(180deg);
+}
+.voce-pref summary:hover{
+    background:#475569;
+}
+.voce-pref .dettagli{
+    padding:4px 14px 14px;
+}
 .nota{
     font-size:13px;
     color:#94a3b8;
@@ -1509,35 +1553,53 @@ function nomiPreferitiOrdinati(){
     return leggiNomiPreferiti().sort(function(x, y){ return collatore.compare(x, y); });
 }
 
-/* Elenco della scheda "Alimenti Preferiti" */
+/* Elenco della scheda "Alimenti Preferiti": righe compatte raggruppate per categoria,
+   che si aprono al tocco e mostrano valori e pulsanti */
 function caricaAlimentiPreferiti(){
     const nomi = nomiPreferitiOrdinati();
-    let html = "";
+
+    const gruppi = [
+        { titolo: "Proteine", categoria: "Proteine", righe: [] },
+        { titolo: "Carboidrati", categoria: "Carboidrati", righe: [] },
+        { titolo: "Grassi", categoria: "Grassi", righe: [] },
+        { titolo: "Misti", categoria: "Misto", righe: [] },
+        { titolo: "Non più nel database", categoria: null, righe: [] }
+    ];
 
     nomi.forEach(function(nome, indice){
         const a = trovaAlimento(nome);
 
-        if(a){
-            html += `
-<div class="pasto">
-<b>${iconaQualita(a.qualita)} ${esc(a.nome)}</b><br>
-<small>${esc(a.categoria === "Misto" ? "Misto" : a.categoria)} · ${esc(a.qualita)}</small><br>
+        if(!a){
+            gruppi[4].righe.push(`
+<details class="voce-pref">
+<summary><span><s>${esc(nome)}</s></span></summary>
+<div class="dettagli">
+<button class="backup" onclick="rimuoviAlimentoPreferito(${indice})">★ Rimuovi</button>
+</div>
+</details>`);
+            return;
+        }
+
+        const gruppo = gruppi.find(function(g){ return g.categoria === a.categoria; }) || gruppi[3];
+        gruppo.righe.push(`
+<details class="voce-pref">
+<summary><span>${iconaQualita(a.qualita)} ${esc(nomeBreve(a.nome))}</span></summary>
+<div class="dettagli">
+<small>${esc(a.nome)}</small><br>
+<small>${esc(a.qualita)}</small><br>
 P: ${a.proteine} | C: ${a.carbo} | G: ${a.grassi} <small>(per 100 g)</small>
 <br><br>
 <button class="calcola" onclick="usaAlimentoPreferito(${indice})">➕ Usa</button>
 <button class="salva" onclick="modificaAlimentoPreferito(${indice})">✏️ Modifica</button>
 <button class="backup" onclick="rimuoviAlimentoPreferito(${indice})">★ Rimuovi</button>
 </div>
-`;
-        }else{
-            html += `
-<div class="pasto">
-<s>${esc(nome)}</s> <small>(non più nel database)</small>
-<br><br>
-<button class="backup" onclick="rimuoviAlimentoPreferito(${indice})">★ Rimuovi</button>
-</div>
-`;
-        }
+</details>`);
+    });
+
+    let html = "";
+    gruppi.forEach(function(g){
+        if(g.righe.length === 0) return;
+        html += "<div class='gruppo-pref'>" + g.titolo + " (" + g.righe.length + ")</div>" + g.righe.join("");
     });
 
     el("elencoAlimentiPreferiti").innerHTML = html || "Nessun alimento preferito";
@@ -1661,13 +1723,14 @@ function salvaPastoPreferito(){
     alert("⭐ Pasto salvato nei preferiti");
 }
 
+/* Righe compatte raggruppate per tipo di pasto, che si aprono al tocco */
 function caricaPastiPreferiti(){
     const lista = leggiPastiPreferiti();
-    let html = "";
+    const gruppi = TIPI_PASTO.map(function(t){ return { titolo: t, tipo: t, righe: [] }; });
 
     lista.forEach(function(p, indice){
-        let blocchi = { p: 0, c: 0, g: 0 };
-        const righe = [];
+        const blocchi = { p: 0, c: 0, g: 0 };
+        const ingredienti = [];
 
         p.voci.forEach(function(v){
             const db = trovaAlimento(v.nome);
@@ -1675,22 +1738,30 @@ function caricaPastiPreferiti(){
                 blocchi.p += ((db.proteine * v.peso) / 100) / 7;
                 blocchi.c += ((db.carbo * v.peso) / 100) / 9;
                 blocchi.g += ((db.grassi * v.peso) / 100) / 3;
-                righe.push(esc(nomeBreve(db.nome)) + " (" + v.peso + " g)");
+                ingredienti.push(iconaQualita(db.qualita) + " " + esc(nomeBreve(db.nome)) + " (" + v.peso + " g)");
             }else{
-                righe.push("<s>" + esc(nomeBreve(v.nome)) + "</s> (non più nel database)");
+                ingredienti.push("<s>" + esc(nomeBreve(v.nome)) + "</s> (non più nel database)");
             }
         });
 
-        html += `
-<div class="pasto">
-<b>⭐ ${esc(p.nome)}</b> <small>(${esc(p.tipo)})</small><br>
-${righe.join("<br>")}<br><br>
+        const gruppo = gruppi.find(function(g){ return g.tipo === p.tipo; }) || gruppi[1];
+        gruppo.righe.push(`
+<details class="voce-pref">
+<summary><span>⭐ ${esc(p.nome)}</span></summary>
+<div class="dettagli">
+${ingredienti.join("<br>")}<br><br>
 P: ${blocchi.p.toFixed(2)} | C: ${blocchi.c.toFixed(2)} | G: ${blocchi.g.toFixed(2)}
 <br><br>
 <button class="calcola" onclick="usaPastoPreferito(${indice})">📥 Carica nel pasto</button>
 <button class="elimina" onclick="eliminaPastoPreferito(${indice})">🗑️ Elimina</button>
 </div>
-`;
+</details>`);
+    });
+
+    let html = "";
+    gruppi.forEach(function(g){
+        if(g.righe.length === 0) return;
+        html += "<div class='gruppo-pref'>" + g.titolo + " (" + g.righe.length + ")</div>" + g.righe.join("");
     });
 
     el("elencoPastiPreferiti").innerHTML = html || "Nessun pasto preferito";
