@@ -128,6 +128,7 @@ margin-right:0;
     transition:.25s ease;
 }
 #contenitorePasti,
+#contenitoreAlimentiPref,
 #contenitorePreferiti,
 #contenitoreRapido,
 #contenitoreAlimenti,
@@ -451,6 +452,11 @@ margin-right:0;
 </div>
 <div class="nota">La categoria si propone da sola in base ai valori inseriti, ma puoi cambiarla.</div>
 
+<label style="display:flex;align-items:center;gap:10px;margin-top:14px;">
+    <input type="checkbox" id="preferitoManuale" style="width:auto;margin:0;">
+    ⭐ Aggiungi ai preferiti
+</label>
+
 <button class="backup" onclick="salvaAlimentoPersonalizzato()">⭐ Salva nel Database</button>
 </div>
 
@@ -601,6 +607,19 @@ margin-right:0;
         <button type="button" class="elimina" onclick="chiudiCalcoloBlocchi()">✖ Chiudi</button>
     </div>
 
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="accordion-header" onclick="toggleAlimentiPreferiti()">
+    <h3 style="margin:0;">⭐ Alimenti Preferiti</h3>
+    <span id="iconaAlimentiPref">►</span>
+</div>
+
+<div id="contenitoreAlimentiPref" style="display:none;">
+    <div id="elencoAlimentiPreferiti">Nessun alimento preferito</div>
 </div>
 
 </div>
@@ -1476,10 +1495,106 @@ function togglePreferitoSelezionato(){
 
     if(!scriviLS(CHIAVE_PREF_ALIMENTI, nomi)) return;
 
+    aggiornaDopoPreferiti();
+}
+
+function aggiornaDopoPreferiti(){
     aggiornaStatoBottoneModifica();
     filtraAlimentiCompleto();
     inizializzaCostruttoreZona();
+    caricaAlimentiPreferiti();
 }
+
+function nomiPreferitiOrdinati(){
+    return leggiNomiPreferiti().sort(function(x, y){ return collatore.compare(x, y); });
+}
+
+/* Elenco della scheda "Alimenti Preferiti" */
+function caricaAlimentiPreferiti(){
+    const nomi = nomiPreferitiOrdinati();
+    let html = "";
+
+    nomi.forEach(function(nome, indice){
+        const a = trovaAlimento(nome);
+
+        if(a){
+            html += `
+<div class="pasto">
+<b>${iconaQualita(a.qualita)} ${esc(a.nome)}</b><br>
+<small>${esc(a.categoria === "Misto" ? "Misto" : a.categoria)} · ${esc(a.qualita)}</small><br>
+P: ${a.proteine} | C: ${a.carbo} | G: ${a.grassi} <small>(per 100 g)</small>
+<br><br>
+<button class="calcola" onclick="usaAlimentoPreferito(${indice})">➕ Usa</button>
+<button class="salva" onclick="modificaAlimentoPreferito(${indice})">✏️ Modifica</button>
+<button class="backup" onclick="rimuoviAlimentoPreferito(${indice})">★ Rimuovi</button>
+</div>
+`;
+        }else{
+            html += `
+<div class="pasto">
+<s>${esc(nome)}</s> <small>(non più nel database)</small>
+<br><br>
+<button class="backup" onclick="rimuoviAlimentoPreferito(${indice})">★ Rimuovi</button>
+</div>
+`;
+        }
+    });
+
+    el("elencoAlimentiPreferiti").innerHTML = html || "Nessun alimento preferito";
+}
+
+/* Porta l'alimento nel modulo principale, pronto per scegliere la quantità */
+function usaAlimentoPreferito(indice){
+    const a = trovaAlimento(nomiPreferitiOrdinati()[indice]);
+    if(!a){
+        alert("Alimento non trovato nel database");
+        return;
+    }
+
+    if(el("areaManuale").style.display === "block") tornaAlDatabase();
+    mostraAlimento(a);
+
+    const select = el("alimentoSelezionato");
+    if(Array.from(select.options || []).some(function(o){ return o.value === a.nome; })) select.value = a.nome;
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function modificaAlimentoPreferito(indice){
+    const a = trovaAlimento(nomiPreferitiOrdinati()[indice]);
+    if(!a){
+        alert("Alimento non trovato nel database");
+        return;
+    }
+    apriFormModifica(a);
+}
+
+function rimuoviAlimentoPreferito(indice){
+    const nome = nomiPreferitiOrdinati()[indice];
+    if(nome === undefined) return;
+
+    const k = chiaveNome(nome);
+    const nomi = leggiNomiPreferiti().filter(function(n){ return chiaveNome(n) !== k; });
+    if(!scriviLS(CHIAVE_PREF_ALIMENTI, nomi)) return;
+
+    aggiornaDopoPreferiti();
+}
+
+/* Dopo il salvataggio di un alimento: aggiorna il preferito (anche se è stato rinominato) */
+function aggiornaPreferitoDopoSalvataggio(vecchioNome, nuovoNome, preferito){
+    const kn = chiaveNome(nuovoNome);
+    const kv = vecchioNome ? chiaveNome(vecchioNome) : null;
+
+    const nomi = leggiNomiPreferiti().filter(function(n){
+        const k = chiaveNome(n);
+        return k !== kn && k !== kv;
+    });
+    if(preferito) nomi.push(nuovoNome);
+
+    scriviLS(CHIAVE_PREF_ALIMENTI, nomi);
+}
+
+function toggleAlimentiPreferiti(){ toggleSezione("contenitoreAlimentiPref", "iconaAlimentiPref"); }
 
 function sanificaPastoPreferito(p){
     if(!p || typeof p !== "object" || !Array.isArray(p.voci)) return null;
@@ -2760,10 +2875,8 @@ function importaBackup(event){
             if(nuoviPrefAlimenti) scriviLS(CHIAVE_PREF_ALIMENTI, nuoviPrefAlimenti);
             if(nuoviPrefPasti) scriviLS(CHIAVE_PREF_PASTI, nuoviPrefPasti);
             if(nuoviPrefAlimenti || nuoviPrefPasti){
-                filtraAlimentiCompleto();
-                inizializzaCostruttoreZona();
+                aggiornaDopoPreferiti();
                 caricaPastiPreferiti();
-                aggiornaStatoBottoneModifica();
             }
 
             if(!Array.isArray(dati) && Number.isFinite(Number(dati.obiettivoZona)) && Number(dati.obiettivoZona) > 0){
@@ -2792,6 +2905,7 @@ function importaBackup(event){
    ===================================================================== */
 
 function aggiornaTuttiGliElenchi(){
+    caricaAlimentiPreferiti();
     caricaAlimentiPersonalizzati();
     filtraAlimentiCompleto();
     inizializzaCostruttoreZona();
@@ -2818,6 +2932,7 @@ function apriNuovoAlimento(){
     el("grassi").value = "";
     el("qualitaManuale").value = "Moderazione";
     el("categoriaManuale").value = "Misto";
+    el("preferitoManuale").checked = false;
 
     aggiornaStatoBottoneModifica();
     calcola();
@@ -2834,6 +2949,7 @@ function apriFormModifica(a){
     el("grassi").value = a.grassi;
     el("qualitaManuale").value = a.qualita;
     el("categoriaManuale").value = a.categoria;
+    el("preferitoManuale").checked = isPreferito(a.nome);
     categoriaManualeScelta = true;
 
     calcola();
@@ -2918,6 +3034,12 @@ function salvaAlimentoPersonalizzato(){
     personalizzati.push(nuovo);
 
     if(!salvaPersonalizzati(personalizzati)) return;
+
+    aggiornaPreferitoDopoSalvataggio(
+        (eraPersonalizzato && !stessoNomeDiPrima) ? alimentoInModifica.nome : null,
+        nuovo.nome,
+        el("preferitoManuale").checked
+    );
 
     ricostruisciAlimenti();
     aggiornaTuttiGliElenchi();
@@ -3238,6 +3360,7 @@ window.addEventListener("load", function(){
     caricaPasti();
     caricaAlimentiPersonalizzati();
     caricaPastiPreferiti();
+    caricaAlimentiPreferiti();
     calcolaRapido();
     calcola();
     aggiornaBarrePasto();
