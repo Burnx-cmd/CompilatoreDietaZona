@@ -352,6 +352,13 @@ margin-right:0;
 
 <h1>🥗 Calcolatore Dieta a Zona</h1>
 
+<div id="avvisoBackup" class="pasto" style="display:none;margin:0 0 15px">
+    <b>💾 Fai un backup</b><br>
+    <span id="testoAvvisoBackup"></span><br>
+    <button type="button" class="backup" onclick="esportaBackup()">📦 Backup ora</button>
+    <button type="button" class="elimina" onclick="rimandaAvvisoBackup()">Più tardi</button>
+</div>
+
 <button type="button" id="btnInstalla" class="calcola" style="display:none;width:100%;margin:0 0 15px" onclick="installaApp()">📲 Installa l'app sul telefono</button>
 
 <div class="card">
@@ -623,6 +630,7 @@ margin-right:0;
 </div>
 
 <button class="backup" onclick="esportaBackup()">📦 Backup</button>
+<button class="backup" id="btnCondividi" style="display:none" onclick="condividiBackup()">📤 Invia backup</button>
 <button class="salva" onclick="document.getElementById('fileImport').click()">Ripristina</button>
 <input type="file" id="fileImport" accept=".json" style="display:none" onchange="importaBackup(event)">
 
@@ -2603,8 +2611,12 @@ function aggiornaObiettivo(){
     scriviLS(CHIAVE_OBIETTIVO, obiettivo);
 }
 
-function esportaBackup(){
-    const dati = {
+const CHIAVE_ULTIMO_BACKUP = "ultimoBackupZona";
+const CHIAVE_RIMANDA_BACKUP = "rimandaBackupFinoA";
+const GIORNI_PROMEMORIA_BACKUP = 14;
+
+function datiBackup(){
+    return {
         versione: 3,
         pasti: leggiLS(CHIAVE_PASTI, []),
         alimentiPersonalizzati: leggiPersonalizzati(),
@@ -2612,13 +2624,76 @@ function esportaBackup(){
         pastiPreferiti: leggiPastiPreferiti(),
         obiettivoZona: leggiLS(CHIAVE_OBIETTIVO, 12)
     };
+}
 
-    const blob = new Blob([JSON.stringify(dati, null, 2)], { type: "application/json" });
+function segnaBackupFatto(){
+    scriviLS(CHIAVE_ULTIMO_BACKUP, Date.now());
+    el("avvisoBackup").style.display = "none";
+}
+
+function esportaBackup(){
+    const blob = new Blob([JSON.stringify(datiBackup(), null, 2)], { type: "application/json" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "BackupZona.json";
     link.click();
     setTimeout(function(){ URL.revokeObjectURL(link.href); }, 1000);
+    segnaBackupFatto();
+}
+
+/* Apre il menu "Condividi" di Android: puoi salvare il backup su Google Drive, inviarlo a te stesso, ecc. */
+async function condividiBackup(){
+    const file = new File([JSON.stringify(datiBackup(), null, 2)], "BackupZona.json", { type: "application/json" });
+
+    if(!navigator.canShare || !navigator.canShare({ files: [file] })){
+        esportaBackup();
+        return;
+    }
+
+    try{
+        await navigator.share({ files: [file], title: "Backup Dieta a Zona" });
+        segnaBackupFatto();
+    }catch(e){
+        if(!e || e.name !== "AbortError") esportaBackup();
+    }
+}
+
+function ciSonoDati(){
+    const pasti = leggiLS(CHIAVE_PASTI, []);
+    return (Array.isArray(pasti) && pasti.length > 0) ||
+        leggiPersonalizzati().length > 0 ||
+        leggiNomiPreferiti().length > 0 ||
+        leggiPastiPreferiti().length > 0;
+}
+
+/* Promemoria: i dati sono solo su questo dispositivo, quindi un backup ogni tanto li mette al sicuro */
+function aggiornaAvvisoBackup(){
+    const box = el("avvisoBackup");
+    if(!ciSonoDati()){
+        box.style.display = "none";
+        return;
+    }
+
+    const ora = Date.now();
+    const ultimo = Number(leggiLS(CHIAVE_ULTIMO_BACKUP, 0)) || 0;
+    const rimandaFino = Number(leggiLS(CHIAVE_RIMANDA_BACKUP, 0)) || 0;
+    const giorni = ultimo ? Math.floor((ora - ultimo) / 86400000) : null;
+
+    if(ora < rimandaFino || (ultimo && giorni < GIORNI_PROMEMORIA_BACKUP)){
+        box.style.display = "none";
+        return;
+    }
+
+    el("testoAvvisoBackup").innerText = (ultimo
+        ? "L'ultimo backup risale a " + giorni + " giorni fa. "
+        : "Non hai ancora fatto nessun backup. ") +
+        "I tuoi pasti, preferiti e alimenti sono salvati solo su questo dispositivo: se cancelli i dati del sito o cambi indirizzo, si perdono.";
+    box.style.display = "block";
+}
+
+function rimandaAvvisoBackup(){
+    scriviLS(CHIAVE_RIMANDA_BACKUP, Date.now() + 7 * 86400000);
+    el("avvisoBackup").style.display = "none";
 }
 
 function pastoValido(item){
@@ -3138,7 +3213,7 @@ window.addEventListener("load", function(){
     }else{
         alimentiBase = databaseCompleto.map(creaAlimentoDaDatabase);
         if(!databaseCompleto.some(function(a){ return a.qualita; })){
-            alert("Stai usando un vecchio database.js (senza valutazione Favorevole / Moderazione / Da evitare). Sostituiscilo con il nuovo e aggiorna la pagina (se usi l'app installata, svuota la cache o reinstallala).");
+            alert("Stai usando un vecchio database.js (senza valutazione Favorevole / Moderazione / Da evitare). Sostituiscilo con il nuovo e riapri l'app. Attenzione: non cancellare i dati del sito, altrimenti perdi pasti e preferiti.");
         }
     }
 
@@ -3168,6 +3243,19 @@ window.addEventListener("load", function(){
     aggiornaBarrePasto();
     filtraAlimentiCompleto();
     aggiornaStatoBottoneModifica();
+
+    aggiornaAvvisoBackup();
+
+    if(typeof File !== "undefined" && navigator.canShare && navigator.share){
+        el("btnCondividi").style.display = "inline-block";
+    }
+
+    /* Chiede al browser di non cancellare i dati quando c'è poco spazio */
+    if(navigator.storage && navigator.storage.persist){
+        navigator.storage.persisted().then(function(gia){
+            if(!gia) return navigator.storage.persist();
+        }).catch(function(){ /* non disponibile */ });
+    }
 
     if("serviceWorker" in navigator){
         navigator.serviceWorker.register("./service-worker.js").catch(function(){ /* facoltativo */ });
