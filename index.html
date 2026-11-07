@@ -128,6 +128,8 @@ margin-right:0;
     transition:.25s ease;
 }
 #contenitorePasti,
+#contenitoreTotali,
+#contenitoreObiettivo,
 #contenitoreAlimentiPref,
 #contenitorePreferiti,
 #contenitoreRapido,
@@ -509,7 +511,7 @@ margin-right:0;
 
 <button class="calcola" onclick="calcola()">Calcola</button>
 <button class="calcola" onclick="aggiungiAlPasto()">➕ Aggiungi al Pasto</button>
-<button class="salva" onclick="salvaPasto()">💾 Salva Pasto</button>
+<button class="salva" id="btnSalvaPasto" onclick="salvaPasto()">💾 Salva Pasto</button>
 <button class="elimina" onclick="azzeraTutto()">🧹 Azzera</button>
 
 <hr>
@@ -562,6 +564,13 @@ margin-right:0;
 </div>
 
 <h3 class="titolo-sezione">🍽️ Pasto Corrente</h3>
+
+<div id="bannerModifica" class="pasto" style="display:none;border:2px solid #f59e0b;">
+    <b>✏️ Modifica di un pasto salvato</b><br>
+    <span id="testoBannerModifica"></span><br>
+    <button type="button" class="elimina" onclick="annullaModificaPasto()">✖ Annulla modifica</button>
+</div>
+
 <div id="pastoCorrente">Nessun alimento aggiunto</div>
 
 <div id="suggerimentiPasto" class="pasto" style="display:none;margin-top:15px"></div>
@@ -569,7 +578,7 @@ margin-right:0;
 </div>
 
 <button class="backup" onclick="salvaPastoPreferito()">⭐ Salva pasto come preferito</button>
-<button class="elimina" onclick="svuotaPasto()">🗑️ Svuota Pasto</button>
+<button class="elimina" onclick="svuotaPastoManuale()">🗑️ Svuota Pasto</button>
 
 </div>
 
@@ -701,44 +710,58 @@ margin-right:0;
 
 <div class="card">
 
-<h3 class="titolo-sezione" style="margin-top:0">📊 Totali Giornalieri</h3>
-
-<div style="margin-top:20px">
-<h3 class="titolo-sezione">🍎 Alimento Selezionato</h3>
+<h3 class="titolo-sezione" style="margin-top:0">🍎 Alimento Selezionato</h3>
 <div id="infoAlimento">Nessun alimento selezionato</div>
-</div>
 
 <div id="semaforoIG">⚪ Nessun alimento selezionato</div>
 
-<div>Blocchi Proteine: <b id="totProt">0</b></div>
-<div>Blocchi Carboidrati: <b id="totCarbo">0</b></div>
-<div>Blocchi Grassi: <b id="totGrassi">0</b></div>
-
-<hr>
-
-<h3 class="titolo-sezione">🎯 Obiettivo Giornaliero Zona</h3>
-
-<label for="obiettivoBlocchi">Blocchi Obiettivo</label>
-<input type="number" id="obiettivoBlocchi" value="12" oninput="aggiornaObiettivo()">
-
-<br><br>
-
-<div>
-<div>Proteine: <span id="statoProteine">0 / 12</span></div>
-<progress id="barraProteine" value="0" max="12"></progress>
-</div>
-<br>
-<div>
-<div>Carboidrati: <span id="statoCarbo">0 / 12</span></div>
-<progress id="barraCarbo" value="0" max="12"></progress>
-</div>
-<br>
-<div>
-<div>Grassi: <span id="statoGrassi">0 / 12</span></div>
-<progress id="barraGrassi" value="0" max="12"></progress>
 </div>
 
-<hr>
+<div class="card">
+
+<div class="accordion-header" onclick="toggleTotaliGiornalieri()">
+    <h3 style="margin:0;">📊 Totali Giornalieri</h3>
+    <span id="iconaTotali">►</span>
+</div>
+
+<div id="contenitoreTotali" style="display:none;">
+    <div>Blocchi Proteine: <b id="totProt">0</b></div>
+    <div>Blocchi Carboidrati: <b id="totCarbo">0</b></div>
+    <div>Blocchi Grassi: <b id="totGrassi">0</b></div>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="accordion-header" onclick="toggleObiettivo()">
+    <h3 style="margin:0;">🎯 Obiettivo Giornaliero Zona</h3>
+    <span id="iconaObiettivo">►</span>
+</div>
+
+<div id="contenitoreObiettivo" style="display:none;">
+
+    <label for="obiettivoBlocchi">Blocchi Obiettivo</label>
+    <input type="number" id="obiettivoBlocchi" value="12" oninput="aggiornaObiettivo()">
+
+    <br><br>
+
+    <div>
+        <div>Proteine: <span id="statoProteine">0 / 12</span></div>
+        <progress id="barraProteine" value="0" max="12"></progress>
+    </div>
+    <br>
+    <div>
+        <div>Carboidrati: <span id="statoCarbo">0 / 12</span></div>
+        <progress id="barraCarbo" value="0" max="12"></progress>
+    </div>
+    <br>
+    <div>
+        <div>Grassi: <span id="statoGrassi">0 / 12</span></div>
+        <progress id="barraGrassi" value="0" max="12"></progress>
+    </div>
+
+</div>
 
 </div>
 
@@ -2074,6 +2097,9 @@ function azzeraTutto(){
     if(alimentiPasto.length > 0 && !confirm("Azzerare il pasto corrente e la selezione?")) return;
 
     svuotaPasto();
+    indicePastoInModifica = null;
+    aggiornaStatoModificaPasto();
+    caricaPasti();
     tornaAlDatabase();
 
     el("ricercaAlimento").value = "";
@@ -2100,6 +2126,8 @@ function salvaRapidoComeAlimento(){
 }
 
 function toggleCalcoloRapido(){ toggleSezione("contenitoreRapido", "iconaRapido"); }
+function toggleTotaliGiornalieri(){ toggleSezione("contenitoreTotali", "iconaTotali"); }
+function toggleObiettivo(){ toggleSezione("contenitoreObiettivo", "iconaObiettivo"); }
 function togglePastiPreferiti(){ toggleSezione("contenitorePreferiti", "iconaPreferiti"); }
 
 /* =====================================================================
@@ -2110,6 +2138,7 @@ let alimentiPasto = [];
 let totalePasto = { proteine: 0, carbo: 0, grassi: 0 };
 let totaliGiornalieri = { proteine: 0, carbo: 0, grassi: 0 };
 let ripristinoBlocco = null;
+let indicePastoInModifica = null;
 
 function aggiornaStatoBottoneModifica(){
     const a = trovaAlimento(el("alimento").value);
@@ -2715,6 +2744,30 @@ function bilanciaPastoZona(){
    PASTI SALVATI, OBIETTIVO GIORNALIERO, BACKUP
    ===================================================================== */
 
+/* Pulisce un elenco di ingredienti letto dal browser o da un backup */
+function sanificaVoci(voci){
+    const out = [];
+    if(!Array.isArray(voci)) return out;
+    voci.forEach(function(v){
+        if(!v || typeof v.nome !== "string") return;
+        const peso = parseFloat(v.peso);
+        if(!Number.isFinite(peso) || peso <= 0 || peso > 5000) return;
+        out.push({ nome: v.nome.trim().slice(0, 120), peso: peso, bloccato: !!v.bloccato });
+    });
+    return out;
+}
+
+/* I pasti salvati con le versioni precedenti hanno solo un testo: "NOME (30g), NOME (125g)" */
+function vociDaTesto(testo){
+    const voci = [];
+    const regola = /(.+?) \((\d+(?:\.\d+)?)g\)(?:, |$)/g;
+    let m;
+    while((m = regola.exec(String(testo || ""))) !== null){
+        voci.push({ nome: m[1].trim(), peso: parseFloat(m[2]), bloccato: false });
+    }
+    return sanificaVoci(voci);
+}
+
 function salvaPasto(){
     if(alimentiPasto.length === 0){
         alert("Aggiungi almeno un alimento al pasto");
@@ -2724,28 +2777,133 @@ function salvaPasto(){
     const pasti = leggiLS(CHIAVE_PASTI, []);
     const lista = Array.isArray(pasti) ? pasti : [];
 
-    lista.push({
+    const record = {
         pasto: el("tipoPasto").value,
         alimento: alimentiPasto.map(function(a){ return a.nome + " (" + a.peso + "g)"; }).join(", "),
         proteine: totalePasto.proteine.toFixed(2),
         carbo: totalePasto.carbo.toFixed(2),
-        grassi: totalePasto.grassi.toFixed(2)
-    });
+        grassi: totalePasto.grassi.toFixed(2),
+        voci: alimentiPasto.map(function(a){ return { nome: a.nome, peso: a.peso, bloccato: !!a.bloccato }; })
+    };
+
+    const aggiornamento = indicePastoInModifica !== null && lista[indicePastoInModifica];
+    if(aggiornamento) lista[indicePastoInModifica] = record;
+    else lista.push(record);
 
     if(!scriviLS(CHIAVE_PASTI, lista)) return;
+
+    indicePastoInModifica = null;
+    aggiornaStatoModificaPasto();
 
     svuotaPasto();
     caricaPasti();
     aggiornaBarrePasto();
-    alert("Pasto salvato");
+    alert(aggiornamento ? "Pasto salvato aggiornato" : "Pasto salvato");
 }
 
 function eliminaPasto(indice){
     const pasti = leggiLS(CHIAVE_PASTI, []);
     if(!Array.isArray(pasti)) return;
+
+    if(indicePastoInModifica !== null){
+        if(indice === indicePastoInModifica){
+            if(!confirm("Stai modificando questo pasto: eliminarlo e annullare la modifica?")) return;
+            indicePastoInModifica = null;
+            svuotaPasto();
+        }else if(indice < indicePastoInModifica){
+            indicePastoInModifica--;
+        }
+    }
+
     pasti.splice(indice, 1);
     scriviLS(CHIAVE_PASTI, pasti);
+    aggiornaStatoModificaPasto();
     caricaPasti();
+}
+
+/* Carica un pasto salvato nel pasto corrente: "Salva Pasto" lo aggiornerà al suo posto */
+function avviaModificaPasto(indice){
+    const pasti = leggiLS(CHIAVE_PASTI, []);
+    const item = Array.isArray(pasti) ? pasti[indice] : null;
+    if(!item) return;
+
+    if(alimentiPasto.length > 0 && !confirm("Sostituire il pasto corrente con questo pasto salvato?")) return;
+
+    let voci = sanificaVoci(item.voci);
+    if(voci.length === 0) voci = vociDaTesto(item.alimento);
+
+    const nuovi = [];
+    const mancanti = [];
+    voci.forEach(function(v){
+        const db = trovaAlimento(v.nome);
+        if(!db){
+            mancanti.push(v.nome);
+            return;
+        }
+        const voce = { nome: db.nome, peso: v.peso, bloccato: !!v.bloccato };
+        ricalcolaVoce(voce, db);
+        nuovi.push(voce);
+    });
+
+    if(nuovi.length === 0){
+        alert("Non riesco a ricostruire gli ingredienti di questo pasto (è stato salvato con una versione precedente o gli alimenti non sono più nel database).");
+        return;
+    }
+
+    alimentiPasto = nuovi;
+    if(TIPI_PASTO.includes(item.pasto)) el("tipoPasto").value = item.pasto;
+    indicePastoInModifica = indice;
+
+    ricalcolaTotalePasto();
+    aggiornaStatoModificaPasto();
+    caricaPasti();
+
+    if(mancanti.length > 0){
+        alert("Alcuni alimenti non sono più nel database e non sono stati caricati:\n" + mancanti.join("\n") +
+            "\n\nSe salvi, il pasto verrà aggiornato senza di loro.");
+    }
+
+    const destinazione = el("pastoCorrente");
+    if(destinazione.scrollIntoView) destinazione.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function annullaModificaPasto(){
+    if(indicePastoInModifica === null) return;
+    if(!confirm("Annullare la modifica? Il pasto salvato resta com'era.")) return;
+
+    indicePastoInModifica = null;
+    svuotaPasto();
+    aggiornaStatoModificaPasto();
+    caricaPasti();
+}
+
+function svuotaPastoManuale(){
+    if(indicePastoInModifica !== null){
+        if(!confirm("Annullare la modifica del pasto salvato?")) return;
+        indicePastoInModifica = null;
+        aggiornaStatoModificaPasto();
+        caricaPasti();
+    }
+    svuotaPasto();
+}
+
+function aggiornaStatoModificaPasto(){
+    const banner = el("bannerModifica");
+    const bottone = el("btnSalvaPasto");
+
+    if(indicePastoInModifica === null){
+        banner.style.display = "none";
+        bottone.innerText = "💾 Salva Pasto";
+        return;
+    }
+
+    const pasti = leggiLS(CHIAVE_PASTI, []);
+    const item = Array.isArray(pasti) ? pasti[indicePastoInModifica] : null;
+    el("testoBannerModifica").innerText = item
+        ? "Stai modificando: " + item.pasto + ". Cambia gli ingredienti e premi «Aggiorna pasto salvato»."
+        : "Stai modificando un pasto salvato.";
+    banner.style.display = "block";
+    bottone.innerText = "💾 Aggiorna pasto salvato";
 }
 
 function caricaPasti(){
@@ -2764,12 +2922,15 @@ function caricaPasti(){
         totaliGiornalieri.carbo += c;
         totaliGiornalieri.grassi += g;
 
+        const inModifica = index === indicePastoInModifica;
+
         html += `
-<div class="pasto">
-<b>${esc(item.pasto)}</b><br>
+<div class="pasto"${inModifica ? ' style="border:2px solid #f59e0b"' : ""}>
+<b>${esc(item.pasto)}</b>${inModifica ? " <small>(in modifica)</small>" : ""}<br>
 ${esc(item.alimento)}<br><br>
 P: ${p.toFixed(2)} | C: ${c.toFixed(2)} | G: ${g.toFixed(2)}
 <br><br>
+<button class="salva" onclick="avviaModificaPasto(${index})">✏️ Modifica</button>
 <button class="elimina" onclick="eliminaPasto(${index})">Elimina</button>
 </div>
 `;
@@ -2886,6 +3047,7 @@ function pastoValido(item){
     return item && typeof item === "object" &&
         typeof item.pasto === "string" && item.pasto.length <= 60 &&
         typeof item.alimento === "string" && item.alimento.length <= 4000 &&
+        (item.voci === undefined || Array.isArray(item.voci)) &&
         Number.isFinite(Number(item.proteine)) &&
         Number.isFinite(Number(item.carbo)) &&
         Number.isFinite(Number(item.grassi));
